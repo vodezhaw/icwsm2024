@@ -84,6 +84,7 @@ class ScoredDataset:
     train_data: str
     test_data: str
     classifier_params: dict
+    default_threshold: float
     scores: List[ScoredSample]
 
     def json(self) -> dict:
@@ -92,6 +93,7 @@ class ScoredDataset:
             "train_data": self.train_data,
             "test_data": self.test_data,
             "classifier_params": self.classifier_params,
+            "default_threshold": self.default_threshold,
             "scores": [s.json() for s in self.scores],
         }
 
