@@ -110,7 +110,7 @@ def finetune(
     dev_mode: bool = False,
 ):
     if not model_dir.exists():
-        model_dir.mkdir()
+        model_dir.mkdir(parents=True)
 
     tokenizer = AutoTokenizer.from_pretrained(base_model)
     model = AutoModelForSequenceClassification.from_pretrained(base_model)

@@ -1,0 +1,11 @@
+{
+  "data": "/app/data",
+  "output": "/app/output",
+  "scores": "/app/scores",
+  "dev": true,
+  "mode": "finetune_huggingface",
+  "finetune_huggingface": {
+    "base_model": "google/electra-base-discriminator",
+    "short_name": "electra"
+  }
+}
