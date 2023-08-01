@@ -22,6 +22,22 @@ class Sample:
 
 
 @dataclass(frozen=True)
+class ScoredSample:
+    id: str
+    score: float
+
+    def json(self) -> dict:
+        return {
+            "id": self.id,
+            "score": self.score,
+        }
+
+    @staticmethod
+    def from_json(d: dict) -> 'ScoredSample':
+        return ScoredSample(**d)
+
+
+@dataclass(frozen=True)
 class TrainDataset:
     name: str
     train_samples: List[Sample]
@@ -60,3 +76,26 @@ class TestDataset:
             name=d['name'],
             test_samples=[Sample.from_json(s) for s in d['test_samples']],
         )
+
+
+@dataclass(frozen=True)
+class ScoredDataset:
+    classifier_name: str
+    train_data: str
+    test_data: str
+    classifier_params: dict
+    scores: List[ScoredSample]
+
+    def json(self) -> dict:
+        return {
+            "classifier_name": self.classifier_name,
+            "train_data": self.train_data,
+            "test_data": self.test_data,
+            "classifier_params": self.classifier_params,
+            "scores": [s.json() for s in self.scores],
+        }
+
+    @staticmethod
+    def from_json(d: dict) -> 'ScoredDataset':
+        d['scores'] = [ScoredSample.from_json(s) for s in d['scores']]
+        return ScoredDataset(**d)
