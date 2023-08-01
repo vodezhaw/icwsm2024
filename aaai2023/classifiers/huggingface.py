@@ -100,7 +100,7 @@ def hf_eval(eval_pred):
     }
 
 
-def main(
+def finetune(
     model_short_name: str,
     base_model: str,
     train_data: TrainDataset,
