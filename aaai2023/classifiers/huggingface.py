@@ -115,6 +115,13 @@ def finetune(
     tokenizer = AutoTokenizer.from_pretrained(base_model)
     model = AutoModelForSequenceClassification.from_pretrained(base_model)
 
+    # for misconfigured tokenizers the max length does not properly get initialized
+    # and automatically set to an insanely high number (1e30)
+    # we check and set it defensively to the smallest number for defined models
+    # this is a hack to make the cardiffnlp roberta models not choke
+    if tokenizer.model_max_length > 10000:
+        toknizer.model_max_length = min(tokenizer.model_max_input_sizes.values())
+
     if train_data.dev_samples is not None:
         train_samples = train_data.train_samples
         dev_samples = train_data.dev_samples
