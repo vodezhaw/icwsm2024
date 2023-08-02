@@ -9,6 +9,7 @@ from sklearn.metrics import roc_curve
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
 
+from aaai2023.datasets.classifier import TestDataset, ScoredDataset
 from aaai2023.classifiers.svm_perf import SVMPerf
 from aaai2023.models import Binomial
 from aaai2023.models.bcc import bcc_model, BCCPriorData
@@ -47,6 +48,34 @@ class BinaryClassifierData:
     labels: np.array
     scores: np.array
     default_threshold: float = .5
+
+    @staticmethod
+    def from_test_scores(
+        test_set: TestDataset,
+        scores: ScoredDataset,
+    ) -> 'BinaryClassifierData':
+        if test_set.name != scores.test_data:
+            raise ValueError(f"trying to combine incompatible "
+                             f"TestDataset ({test_set.name}) and"
+                             f" ScoredDataset ({scores.classifier_name, scores.train_data, scores.test_data})")
+
+        score_map = {
+            s.id: s.score
+            for s in scores.scores
+        }
+        label_map = {
+            s.id: s.label
+            for s in test_set.test_samples
+        }
+        id_seq = [s.id for s in test_set.test_samples]
+        labels = np.array([label_map[i] for i in id_seq], dtype=int)
+        ss = np.array([score_map[i] for i in id_seq])
+
+        return BinaryClassifierData(
+            labels=labels,
+            scores=ss,
+            default_threshold=scores.default_threshold,
+        )
 
     def __post_init__(self):
         self.__check_lengths()
