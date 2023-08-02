@@ -120,7 +120,7 @@ def finetune(
     # we check and set it defensively to the smallest number for defined models
     # this is a hack to make the cardiffnlp roberta models not choke
     if tokenizer.model_max_length > 10000:
-        toknizer.model_max_length = min(tokenizer.model_max_input_sizes.values())
+        toknizer.model_max_length = min(tokenizer.max_model_input_sizes.values())
 
     if train_data.dev_samples is not None:
         train_samples = train_data.train_samples
