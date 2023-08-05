@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from aaai2023.classifiers.scripts.finetune_full import main as finetune_hf
+from aaai2023.classifiers.scripts.run_perspective import main as run_perspective
 
 
 def main(config: Optional[dict] = None):
@@ -27,6 +28,13 @@ def main(config: Optional[dict] = None):
             model_short=sub_config['short_name'],
             hf_model=sub_config['base_model'],
             dev_mode=is_dev,
+        )
+    elif mode == "run_perspective":
+        run_perspective(
+            test_path=output_path / "test",
+            scores_path=scores_path,
+            api_key=sub_config['api_key'],
+            cache_file=Path(sub_config['cache']),
         )
     else:
         print(f"unknown mode '{mode}' in configuration:"
