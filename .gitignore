@@ -1,3 +1,6 @@
+# dont commit config and secrets
+config/
+
 # dont commit data
 data/
 
