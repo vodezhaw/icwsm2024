@@ -1,7 +1,4 @@
 
-from pathlib import Path
-import shelve
-
 import requests
 
 
@@ -13,10 +10,8 @@ class Perspective:
             body = f"status code: {status_code}\n\n{text}"
             super().__init__(body)
 
-    def __init__(self, api_key: str, cache_file: Path):
+    def __init__(self, api_key: str):
         self.__api_key = api_key
-        self.cache_file = cache_file
-        self.db = None
 
         self.languages = ["en"]
         self.attributes = {
@@ -29,16 +24,7 @@ class Perspective:
         }
         self.url = "https://commentanalyzer.googleapis.com/v1alpha1/comments:analyze"
 
-    def __enter__(self):
-        if not self.cache_file.exists():
-            self.db = shelve.open(str(self.cache_file))
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.db.close()
-        self.db = None
-
-    def request(self, text: str):
+    def __call__(self, text: str):
 
         body = {
             "comment": {"text": text},
@@ -58,14 +44,3 @@ class Perspective:
             )
 
         return req.json()
-
-    def __call__(
-        self,
-        sample_key: str,
-        sample_txt: str,
-    ):
-        res = self.db.get(sample_key)
-        if res is None:
-            res = self.request(sample_txt)
-            self.db[sample_key] = res
-        return res
