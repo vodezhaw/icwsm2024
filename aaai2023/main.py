@@ -31,7 +31,7 @@ def main(config: Optional[dict] = None):
         )
     elif mode == "run_perspective":
         run_perspective(
-            test_path=output_path / "test",
+            test_path=data_path / "test",
             scores_path=scores_path,
             api_key=sub_config['api_key'],
             cache_file=Path(sub_config['cache']),
