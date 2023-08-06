@@ -1,4 +1,7 @@
 
+import gzip
+import json
+from pathlib import Path
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -58,6 +61,17 @@ class TrainDataset:
             dev_samples=[Sample.from_json(s) for s in d['dev_samples']] if d['dev_samples'] is not None else None,
         )
 
+    def save(self, path: Path) -> None:
+        with gzip.open(path, 'wt') as fout:
+            fout.write(json.dumps(obj=self.json(), indent=2))
+            fout.write('\n')
+
+    @staticmethod
+    def load(path: Path) -> 'TrainDataset':
+        with gzip.open(path, 'rt') as fin:
+            data = json.load(fin)
+        return TrainDataset.from_json(data)
+
 
 @dataclass(frozen=True)
 class TestDataset:
@@ -76,6 +90,17 @@ class TestDataset:
             name=d['name'],
             test_samples=[Sample.from_json(s) for s in d['test_samples']],
         )
+
+    def save(self, path: Path) -> None:
+        with gzip.open(path, 'wt') as fout:
+            fout.write(json.dumps(obj=self.json(), indent=2))
+            fout.write('\n')
+
+    @staticmethod
+    def load(path: Path) -> 'TestDataset':
+        with gzip.open(path, 'rt') as fin:
+            data = json.load(fin)
+        return TestDataset.from_json(data)
 
 
 @dataclass(frozen=True)
@@ -101,3 +126,14 @@ class ScoredDataset:
     def from_json(d: dict) -> 'ScoredDataset':
         d['scores'] = [ScoredSample.from_json(s) for s in d['scores']]
         return ScoredDataset(**d)
+
+    def save(self, path: Path) -> None:
+        with gzip.open(path, 'wt') as fout:
+            fout.write(json.dumps(obj=self.json(), indent=2))
+            fout.write('\n')
+
+    @staticmethod
+    def load(path: Path) -> 'ScoredDataset':
+        with gzip.open(path, 'rt') as fin:
+            data = json.load(fin)
+        return ScoredDataset.from_json(data)
