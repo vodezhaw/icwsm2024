@@ -42,6 +42,8 @@ def build_clf(
                 C=svm_c,
                 class_weight='balanced',
                 random_state=seed,
+                dual='auto',
+                max_iter=100000,
             )),
         ],
     )
