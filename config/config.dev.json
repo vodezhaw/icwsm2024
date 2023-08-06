@@ -7,5 +7,10 @@
   "finetune_huggingface": {
     "base_model": "google/electra-base-discriminator",
     "short_name": "electra"
-  }
+  },
+  "run_perspective": {
+    "api_key": "DO NOT COMMIT API KEY!",
+    "cache": "/app/scores/perspective-api.shelve"
+  },
+  "run_tfidf": {}
 }

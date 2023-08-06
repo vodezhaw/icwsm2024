@@ -5,6 +5,7 @@ from pathlib import Path
 
 from aaai2023.classifiers.scripts.finetune_full import main as finetune_hf
 from aaai2023.classifiers.scripts.run_perspective import main as run_perspective
+from aaai2023.classifiers.scripts.train_tfidf import main as run_tfidf
 
 
 def main(config: Optional[dict] = None):
@@ -35,6 +36,12 @@ def main(config: Optional[dict] = None):
             scores_path=scores_path,
             api_key=sub_config['api_key'],
             cache_file=Path(sub_config['cache']),
+        )
+    elif mode == "run_tfidf":
+        run_tfidf(
+            train=data_path / "train",
+            test=data_path / "test",
+            scores_path=scores_path,
         )
     else:
         print(f"unknown mode '{mode}' in configuration:"
