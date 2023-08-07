@@ -103,7 +103,7 @@ def experiment(
     del best_params['steps']
     del best_params['tfidf']
     del best_params['svm']
-    best_params['tfidf__dtype'] = str(best_params['tfidf_dtype'])
+    best_params['tfidf__dtype'] = str(best_params['tfidf__dtype'])
 
     result = []
     for test in tests:
