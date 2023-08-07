@@ -6,6 +6,7 @@ from pathlib import Path
 from aaai2023.classifiers.scripts.finetune_full import main as finetune_hf
 from aaai2023.classifiers.scripts.run_perspective import main as run_perspective
 from aaai2023.classifiers.scripts.train_tfidf import main as run_tfidf
+from aaai2023.datasets.scripts.subsample_hate_data import main as subsample_hate
 
 
 def main(config: Optional[dict] = None):
@@ -41,6 +42,11 @@ def main(config: Optional[dict] = None):
         run_tfidf(
             train=data_path / "train",
             test=data_path / "test",
+            scores_path=scores_path,
+        )
+    elif mode == "subsample_hate":
+        subsample_hate(
+            test_path=data_path / "test",
             scores_path=scores_path,
         )
     else:
