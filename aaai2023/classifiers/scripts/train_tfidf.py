@@ -146,6 +146,10 @@ def main(
 
         print(f"training on {train_data.name}")
 
+        clf_name = "tfidf-svm"
+        if len(list(scores_path.glob(f"{clf_name}-{train_data.name}-*.json.gz"))) == len(tests):
+            continue
+
         for o in experiment(train=train_data, tests=tests):
             with gzip.open(scores_path / f"{o.classifier_name}-{o.train_data}-{o.test_data}.json.gz", "wt") as fout:
                 fout.write(json.dumps(obj=o.json(), indent=2))
