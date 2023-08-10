@@ -57,25 +57,24 @@ def quantify(
     quant_strategy: QuantificationStrategy,
     quant_data: BinaryQuantificationData,
 ) -> float | str:
-    return 0.
-    # if quant_strategy == "CC":
-    #     return quant_data.classify_and_count()
-    # elif quant_strategy == "ACC":
-    #     return quant_data.adjusted_classify_and_count()
-    # elif quant_strategy == "PCC":
-    #     return quant_data.probabilistic_classify_and_count()
-    # elif quant_strategy == "PACC":
-    #     return quant_data.probabilistic_adjusted_classify_and_count()
-    # elif quant_strategy == "CPCC":
-    #     return quant_data.calibrated_pcc()
-    # elif quant_strategy == "ABCC":
-    #     return quant_data.bayesian_classify_and_count(agnostic=True)
-    # elif quant_strategy == "BCC":
-    #     return quant_data.bayesian_classify_and_count(agnostic=False)
-    # elif quant_strategy == "Truth":
-    #     return quant_data.true_prevalence()
-    # else:
-    #     return f"unknown quantification strategy `{quant_strategy}`"
+    if quant_strategy == "CC":
+        return quant_data.classify_and_count()
+    elif quant_strategy == "ACC":
+        return quant_data.adjusted_classify_and_count()
+    elif quant_strategy == "PCC":
+        return quant_data.probabilistic_classify_and_count()
+    elif quant_strategy == "PACC":
+        return quant_data.probabilistic_adjusted_classify_and_count()
+    elif quant_strategy == "CPCC":
+        return quant_data.calibrated_pcc()
+    elif quant_strategy == "ABCC":
+        return quant_data.bayesian_classify_and_count(agnostic=True)
+    elif quant_strategy == "BCC":
+        return quant_data.bayesian_classify_and_count(agnostic=False)
+    elif quant_strategy == "Truth":
+        return quant_data.true_prevalence()
+    else:
+        return f"unknown quantification strategy `{quant_strategy}`"
 
 
 @dataclass(frozen=True)
