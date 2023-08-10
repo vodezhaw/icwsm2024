@@ -242,10 +242,10 @@ def experiment(
         return "sample selection strategy did not produce positive samples"
 
     try:
-        return quantify(
+        return float(quantify(
             quant_strategy=quant_strategy,
             quant_data=quant_data,
-        )
+        ))
     except Exception as e:
         return f"failed with Exception:\n{e}"
 
