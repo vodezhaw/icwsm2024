@@ -46,7 +46,11 @@ def build_clf_data(
     test_folder: str,
 ) -> BinaryClassifierData:
     scores = ScoredDataset.load(Path(scores_file))
-    test = TestDataset.load(Path(test_folder) / f"{scores.test_data}.json.gz")
+    if any(scores.test_data.endswith(suffix) for suffix in {"-p01", "-p05", "-p10", "-p1", "-p3", "-p5"}):
+        test_name = "-".join(scores.test_data.split("-")[:-1])
+    else:
+        test_name = scores.test_data
+    test = TestDataset.load(Path(test_folder) / f"{test_name}.json.gz")
     return BinaryClassifierData.from_test_scores(
         test_set=test,
         scores=scores,
