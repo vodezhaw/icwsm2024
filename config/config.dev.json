@@ -1,9 +1,9 @@
 {
-  "data": "/app/data",
-  "output": "/app/output",
-  "scores": "/app/scores",
+  "data": "./data",
+  "output": "./temp",
+  "scores": "./data/scores",
   "dev": true,
-  "mode": "finetune_huggingface",
+  "mode": "subsample_hate",
   "finetune_huggingface": {
     "base_model": "google/electra-base-discriminator",
     "short_name": "electra"
@@ -12,5 +12,6 @@
     "api_key": "DO NOT COMMIT API KEY!",
     "cache": "/app/scores/perspective-api.shelve"
   },
-  "run_tfidf": {}
+  "run_tfidf": {},
+  "subsample_hate": {}
 }
