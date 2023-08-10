@@ -54,7 +54,7 @@ class BinaryClassifierData:
         test_set: TestDataset,
         scores: ScoredDataset,
     ) -> 'BinaryClassifierData':
-        if test_set.name != scores.test_data:
+        if not scores.test_data.startswith(test_set.name):
             raise ValueError(f"trying to combine incompatible "
                              f"TestDataset ({test_set.name}) and"
                              f" ScoredDataset ({scores.classifier_name, scores.train_data, scores.test_data})")
