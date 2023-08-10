@@ -8,6 +8,11 @@ import numpy as np
 from aaai2023.datasets import load_test, load_scores
 from aaai2023.datasets.classifier import TestDataset, ScoredDataset
 
+SHORT_NAMES = {
+    "google/electra-base-discriminator": "electra",
+    "cardiffnlp/twitter-roberta-base": "cardiffnlp",
+}
+
 
 def main(
     test_path: Path,
@@ -92,4 +97,6 @@ def main(
                         if s.id in new_id_set
                     ]
                 )
-                new_scores_data.save(scores_path / f"{new_scores_data.classifier_name}-{new_scores_data.train_data}-{new_scores_data.test_data}.json.gz")
+                name = new_scores_data.classifier_name
+                name = SHORT_NAMES.get(name, name)
+                new_scores_data.save(scores_path / f"{name}-{new_scores_data.train_data}-{new_scores_data.test_data}.json.gz")
