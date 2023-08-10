@@ -67,7 +67,7 @@ class BinaryClassifierData:
             s.id: s.label
             for s in test_set.test_samples
         }
-        id_seq = [s.id for s in test_set.test_samples]
+        id_seq = [s.id for s in test_set.test_samples if s.id in score_map.keys()]
         labels = np.array([label_map[i] for i in id_seq], dtype=int)
         ss = np.array([score_map[i] for i in id_seq])
 
