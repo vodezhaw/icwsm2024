@@ -96,7 +96,7 @@ class BinaryClassifierData:
         )
 
     def prevalence(self) -> float:
-        return self.labels.mean()
+        return float(self.labels.mean())
 
     def threshold(self, method: ThresholdMethod | None = None) -> float:
         if method is None:
@@ -150,10 +150,10 @@ class BinaryClassifierData:
         )
 
     def classify_and_count(self, threshold: Optional[float] = None) -> float:
-        return self.clf_counts(threshold).p()
+        return float(self.clf_counts(threshold).p())
 
     def probabilistic_classify_and_count(self) -> float:
-        return self.scores.mean()
+        return float(self.scores.mean())
 
     def adjusted_classify_and_count(
         self,
@@ -314,7 +314,7 @@ class BinaryQuantificationData:
     test: BinaryClassifierData
 
     def true_prevalence(self):
-        return self.test.labels.mean()
+        return float(self.test.labels.mean())
 
     def classify_and_count(self, method: ThresholdMethod | None = None) -> float:
         th = self.dev.threshold(method)
@@ -328,14 +328,14 @@ class BinaryQuantificationData:
     def quant_cc(self) -> float:
         quant = QuantScaling()
         quant.fit(self.dev.scores, self.dev.labels)
-        return (quant.transform(self.test.scores, self.test.labels) >= 0.).mean()
+        return float((quant.transform(self.test.scores, self.test.labels) >= 0.).mean())
 
     def calibrated_pcc(
         self,
     ) -> float:
         calib = PlattScaling()
         calib.fit(self.dev.scores, self.dev.labels)
-        return calib.transform(self.test.scores).mean()
+        return float(calib.transform(self.test.scores).mean())
 
     def adjusted_classify_and_count(
         self,
@@ -368,4 +368,4 @@ class BinaryQuantificationData:
 
         samples = run_mcmc(bcc_model, bcc_prior, verbose=False)
 
-        return samples['p_true'].mean()
+        return float(samples['p_true'].mean())
