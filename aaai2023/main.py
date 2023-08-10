@@ -7,6 +7,7 @@ from aaai2023.classifiers.scripts.finetune_full import main as finetune_hf
 from aaai2023.classifiers.scripts.run_perspective import main as run_perspective
 from aaai2023.classifiers.scripts.train_tfidf import main as run_tfidf
 from aaai2023.datasets.scripts.subsample_hate_data import main as subsample_hate
+from aaai2023.scripts.experiments import run_all as run_experiments
 
 
 def main(config: Optional[dict] = None):
@@ -48,6 +49,12 @@ def main(config: Optional[dict] = None):
         subsample_hate(
             test_path=data_path / "test",
             scores_path=scores_path,
+        )
+    elif mode == "run_experiments":
+        run_experiments(
+            test_folder=data_path / "test",
+            scores_folder=scores_path,
+            db_file=Path(sub_config['db_file']),
         )
     else:
         print(f"unknown mode '{mode}' in configuration:"

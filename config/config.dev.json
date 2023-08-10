@@ -3,7 +3,7 @@
   "output": "./temp",
   "scores": "./data/scores",
   "dev": true,
-  "mode": "subsample_hate",
+  "mode": "run_experiments",
   "finetune_huggingface": {
     "base_model": "google/electra-base-discriminator",
     "short_name": "electra"
@@ -13,5 +13,8 @@
     "cache": "/app/scores/perspective-api.shelve"
   },
   "run_tfidf": {},
-  "subsample_hate": {}
+  "subsample_hate": {},
+  "run_experiments": {
+    "db_file": "./data/trial.db"
+  }
 }
