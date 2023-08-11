@@ -5,6 +5,7 @@ from dataclasses import dataclass, asdict
 import sqlite3
 from multiprocessing import Pool
 import warnings
+import hashlib
 
 import numpyro
 from tqdm import tqdm
@@ -92,14 +93,17 @@ class Experiment:
     other_domain_scores_file: str | None = None
     random_seed: int | None = None
 
-    def compute_db_id(self) -> int:
-        return hash(f"{self.scores_file}-"
-                    f"{self.sample_selection_strategy}-"
-                    f"{self.quant_strategy}-"
-                    f"{self.n_samples_to_select}-"
-                    f"{self.n_quantiles}-"
-                    f"{self.other_domain_scores_file}-"
-                    f"{self.random_seed}")
+    def compute_db_hash(self) -> str:
+        string_repr = (f"{self.scores_file}-"
+                       f"{self.sample_selection_strategy}-"
+                       f"{self.quant_strategy}-"
+                       f"{self.n_samples_to_select}-"
+                       f"{self.n_quantiles}-"
+                       f"{self.other_domain_scores_file}-"
+                       f"{self.random_seed}")
+        h = hashlib.new("sha256")
+        h.update(string_repr.encode("utf-8"))
+        return h.hexdigest()
 
 
 @dataclass(frozen=True)
@@ -287,7 +291,7 @@ def create_db(
         with sqlite3.connect(db_file) as conn:
             conn.executescript("""
             CREATE TABLE IF NOT EXISTS experiment (
-                hash_id INTEGER NOT NULL PRIMARY KEY,
+                hash_id TEXT NOT NULL PRIMARY KEY,
                 scores_file TEXT NOT NULL,
                 sample_selection_strategy TEXT NOT NULL,
                 quantification_strategy TEXT NOT NULL,
@@ -311,7 +315,7 @@ def insert_result(
         INSERT INTO experiment VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
-            res.compute_db_id(),
+            res.compute_db_hash(),
             res.scores_file,
             res.sample_selection_strategy,
             res.quant_strategy,
@@ -328,7 +332,7 @@ def insert_result(
 
 def all_ids(
     conn: sqlite3.Connection,
-) -> Set[int]:
+) -> Set[str]:
     c = conn.cursor()
     c.execute("SELECT hash_id FROM experiment")
     res = {r[0] for r in c.fetchall()}
@@ -362,7 +366,7 @@ def run_all(
             for e in enumerate_experiments(
                 scores_folder=scores_folder,
             )
-            if e.compute_db_id() not in already_done
+            if e.compute_db_hash() not in already_done
         ))
         for result in pool.imap_unordered(func=fn, iterable=exp_gen, chunksize=128):
             insert_result(conn, result)
