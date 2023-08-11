@@ -352,7 +352,7 @@ def run_all(
     with Pool(
         processes=None,
         initializer=init_fn,
-        maxtasksperchild=12288
+        maxtasksperchild=8192,
     ) as pool, sqlite3.connect(db_file) as conn:
         exp_gen = tqdm((
             e
