@@ -4,6 +4,7 @@ from pathlib import Path
 from dataclasses import dataclass, asdict
 import sqlite3
 from multiprocessing import Pool
+import warnings
 
 import numpyro
 from tqdm import tqdm
@@ -246,10 +247,12 @@ def experiment(
         return "sample selection strategy did not produce positive samples"
 
     try:
-        return float(quantify(
-            quant_strategy=quant_strategy,
-            quant_data=quant_data,
-        ))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            return float(quantify(
+                quant_strategy=quant_strategy,
+                quant_data=quant_data,
+            ))
     except Exception as e:
         return f"failed with Exception:\n{e}"
 
