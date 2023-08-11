@@ -349,7 +349,11 @@ def run_all(
 
     fn = ExperimentWrapper(str(test_folder))
 
-    with Pool(None, init_fn) as pool, sqlite3.connect(db_file) as conn:
+    with Pool(
+        processes=None,
+        initializer=init_fn,
+        maxtasksperchild=12288
+    ) as pool, sqlite3.connect(db_file) as conn:
         exp_gen = tqdm((
             e
             for e in enumerate_experiments(
