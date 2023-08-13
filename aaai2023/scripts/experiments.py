@@ -1,11 +1,11 @@
 
-from typing import Literal, Iterator, Iterable, Set
+from typing import Literal, Iterator, Iterable
 from pathlib import Path
 from dataclasses import dataclass, asdict
-import sqlite3
 from multiprocessing import Pool
 import warnings
 import hashlib
+import json
 
 import numpyro
 from tqdm import tqdm
@@ -284,72 +284,20 @@ class ExperimentWrapper:
             raise ValueError(f"unexpected return type `{type(res)}`")
 
 
-def create_db(
-    db_file: Path,
-):
-    if not db_file.exists():
-        with sqlite3.connect(db_file) as conn:
-            conn.executescript("""
-            CREATE TABLE IF NOT EXISTS experiment (
-                hash_id TEXT NOT NULL PRIMARY KEY,
-                scores_file TEXT NOT NULL,
-                sample_selection_strategy TEXT NOT NULL,
-                quantification_strategy TEXT NOT NULL,
-                n_samples_to_select INTEGER,
-                n_quantiles INTEGER,
-                other_domain_scores_file TEXT,
-                random_seed INTEGER,
-                predicted_prevalence REAL,
-                error_message TEXT
-            );
-            """)
-            conn.commit()
-
-
-def insert_result(
-    conn: sqlite3.Connection,
-    res: ExperimentResult,
-):
-    conn.execute(
-    """
-        INSERT INTO experiment VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """,
-        (
-            res.compute_db_hash(),
-            res.scores_file,
-            res.sample_selection_strategy,
-            res.quant_strategy,
-            res.n_samples_to_select,
-            res.n_quantiles,
-            res.other_domain_scores_file,
-            res.random_seed,
-            res.predicted_prevalence,
-            res.error_message
-        )
-    )
-    conn.commit()
-
-
-def all_ids(
-    conn: sqlite3.Connection,
-) -> Set[str]:
-    c = conn.cursor()
-    c.execute("SELECT hash_id FROM experiment")
-    res = {r[0] for r in c.fetchall()}
-    c.close()
-    return res
-
-
 def run_all(
     test_folder: Path,
     scores_folder: Path,
-    db_file: Path,
+    results_file: Path,
 ):
-    if not db_file.exists():
-        create_db(db_file)
-
-    with sqlite3.connect(db_file) as conn:
-        already_done = all_ids(conn)
+    if results_file.exists():
+        with results_file.open('r') as fin:
+            already_done = {
+                json.loads(line.strip())['hash_id']
+                for line in fin
+            }
+    else:
+        results_file.touch()
+        already_done = set()
 
     def init_fn(*args, **kwargs):
         numpyro.set_host_device_count(1)
@@ -360,7 +308,7 @@ def run_all(
         processes=None,
         initializer=init_fn,
         maxtasksperchild=8192,
-    ) as pool, sqlite3.connect(db_file) as conn:
+    ) as pool:
         exp_gen = tqdm((
             e
             for e in enumerate_experiments(
@@ -369,4 +317,8 @@ def run_all(
             if e.compute_db_hash() not in already_done
         ))
         for result in pool.imap_unordered(func=fn, iterable=exp_gen, chunksize=128):
-            insert_result(conn, result)
+            with results_file.open("a") as fout:
+                res_dict = asdict(result)
+                res_dict["hash_id"] = result.compute_db_hash()
+                fout.write(json.dumps(res_dict))
+                fout.write("\n")

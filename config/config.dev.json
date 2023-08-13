@@ -15,6 +15,6 @@
   "run_tfidf": {},
   "subsample_hate": {},
   "run_experiments": {
-    "db_file": "./data/trial.db"
+    "result_file": "./data/trial.jsonl"
   }
 }
