@@ -299,14 +299,10 @@ def run_all(
         results_file.touch()
         already_done = set()
 
-    def init_fn(*args, **kwargs):
-        numpyro.set_host_device_count(1)
-
     fn = ExperimentWrapper(str(test_folder))
 
     with get_context("spawn").Pool(
         processes=None,
-        initializer=init_fn,
         maxtasksperchild=8192,
     ) as pool:
         exp_gen = tqdm((
