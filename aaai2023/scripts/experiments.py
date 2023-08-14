@@ -2,7 +2,7 @@
 from typing import Literal, Iterator, Iterable
 from pathlib import Path
 from dataclasses import dataclass, asdict
-from multiprocessing import Pool
+from multiprocessing import get_context
 import warnings
 import hashlib
 import json
@@ -304,7 +304,7 @@ def run_all(
 
     fn = ExperimentWrapper(str(test_folder))
 
-    with Pool(
+    with get_context("spawn").Pool(
         processes=None,
         initializer=init_fn,
         maxtasksperchild=8192,
