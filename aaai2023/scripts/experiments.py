@@ -312,7 +312,7 @@ def run_all(
     pbar = tqdm(total=len(exp_gen))
 
     batch_size = 8192
-    for start_ix in range(len(exp_gen), batch_size):
+    for start_ix in range(0, len(exp_gen), batch_size):
         next_batch = exp_gen[start_ix:start_ix+batch_size]
         with get_context("spawn").Pool() as pool:
             with results_file.open("a") as fout:
