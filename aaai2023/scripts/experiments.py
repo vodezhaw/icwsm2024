@@ -301,20 +301,24 @@ def run_all(
 
     fn = ExperimentWrapper(str(test_folder))
 
-    with get_context("spawn").Pool(
-        processes=None,
-        maxtasksperchild=8192,
-    ) as pool:
-        exp_gen = tqdm([
-            e
-            for e in enumerate_experiments(
-                scores_folder=scores_folder,
-            )
-            if e.compute_db_hash() not in already_done
-        ])
-        with results_file.open("a") as fout:
-            for result in pool.imap_unordered(func=fn, iterable=exp_gen, chunksize=128):
-                res_dict = asdict(result)
-                res_dict["hash_id"] = result.compute_db_hash()
-                fout.write(json.dumps(res_dict))
-                fout.write("\n")
+    exp_gen = [
+        e
+        for e in enumerate_experiments(
+            scores_folder=scores_folder,
+        )
+        if e.compute_db_hash() not in already_done
+    ]
+
+    pbar = tqdm(total=len(exp_gen))
+
+    batch_size = 8192
+    for start_ix in range(len(exp_gen), batch_size):
+        next_batch = exp_gen[start_ix:start_ix+batch_size]
+        with get_context("spawn").Pool() as pool:
+            with results_file.open("a") as fout:
+                for result in pool.imap_unordered(func=fn, iterable=next_batch, chunksize=128):
+                    res_dict = asdict(result)
+                    res_dict["hash_id"] = result.compute_db_hash()
+                    fout.write(json.dumps(res_dict))
+                    fout.write("\n")
+                    pbar.update(1)
