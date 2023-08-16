@@ -311,14 +311,25 @@ def run_all(
 
     pbar = tqdm(total=len(exp_gen))
 
-    batch_size = 8192
-    for start_ix in range(0, len(exp_gen), batch_size):
-        next_batch = exp_gen[start_ix:start_ix+batch_size]
-        with get_context("spawn").Pool() as pool:
-            with results_file.open("a") as fout:
-                for result in pool.imap_unordered(func=fn, iterable=next_batch, chunksize=128):
-                    res_dict = asdict(result)
-                    res_dict["hash_id"] = result.compute_db_hash()
-                    fout.write(json.dumps(res_dict))
-                    fout.write("\n")
-                    pbar.update(1)
+    # batch_size = 8192
+    # for start_ix in range(0, len(exp_gen), batch_size):
+    #     next_batch = exp_gen[start_ix:start_ix+batch_size]
+    #     with get_context("spawn").Pool() as pool:
+    #         with results_file.open("a") as fout:
+    #             for result in pool.imap_unordered(func=fn, iterable=next_batch, chunksize=128):
+    #                 res_dict = asdict(result)
+    #                 res_dict["hash_id"] = result.compute_db_hash()
+    #                 fout.write(json.dumps(res_dict))
+    #                 fout.write("\n")
+    #                 pbar.update(1)
+
+    numpyro.set_host_device_count(8)
+
+    with results_file.open('a') as fout:
+        for e in exp_gen:
+            res = fn(e)
+            res_dict = asdict(res)
+            res_dict['hash_id'] = res.compute_db_hash()
+            fout.write(json.dumps(res_dict))
+            fout.write("\n")
+            pbar.update(1)
