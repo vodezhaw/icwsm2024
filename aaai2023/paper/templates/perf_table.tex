@@ -1,0 +1,10 @@
+% input:
+% train_datasets : list of training sets, will be the rows of the table
+% test_datasets :  list of test sets, will be the columns of the table
+% auc : dictionary where auc[train, test] is the ROC-AUC of the classifier
+\begin{tabular}{ l | {% for t in test_datasets %} c {% endfor %} }
+{% for test in test_datasets %} & {{ test }}{% endfor %} \\ \hline
+{% for train in train_datasets %}
+    {{ train }} {% for test in test_datasets %} & {{ "{0:.3f}".format(auc[train][test]) }} {% endfor %} \\
+{% endfor %}
+\end{tabular}
