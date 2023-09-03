@@ -64,7 +64,7 @@ def boxplots(
             plt.plot([1, 1], color=color, label=sstrat)
             for sstrat, color in sstrats
         ]
-        plt.legend()
+        plt.legend(loc="upper right")
 
         for dummy in dummy_lines:
             dummy[0].set_visible(False)
