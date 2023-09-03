@@ -132,12 +132,12 @@ def main():
     boxplots(
         aes,
         y_label="Absolute Error",
-        save_as="./artefacts/all_aes.png",
+        save_as="./artefacts/qstrats/all_aes.png",
     )
     boxplots(
         apes,
         y_label="Absolute Relative Error",
-        save_as="./artefacts/all_apes.png",
+        save_as="./artefacts/qstrats/all_apes.png",
     )
 
     for clf in ['electra', 'cardiffnlp', 'tfidf-svm', 'perspective']:
@@ -166,12 +166,12 @@ def main():
         boxplots(
             aes,
             y_label="Absolute Error",
-            save_as=f"./artefacts/{clf}_aes.png",
+            save_as=f"./artefacts/qstrats/{clf}_aes.png",
         )
         boxplots(
             apes,
             y_label="Absolute Relative Error",
-            save_as=f"./artefacts/{clf}_apes.png",
+            save_as=f"./artefacts/qstrats/{clf}_apes.png",
         )
 
     return res

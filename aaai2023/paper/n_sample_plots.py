@@ -143,7 +143,7 @@ def main():
                 "quantile": "#A9B0B3",
             },
             y_label="Absolute Error",
-            save_as=f"./artefacts/{qstrat}_sample_nums_AE.png",
+            save_as=f"./artefacts/sample_sizes/{qstrat}_sample_nums_AE.png",
         )
         
         apes = {
@@ -160,7 +160,7 @@ def main():
                 "quantile": "#A9B0B3",
             },
             y_label="Absolute Percentage Error",
-            save_as=f"./artefacts/{qstrat}_sample_nums_APE.png",
+            save_as=f"./artefacts/sample_sizes/{qstrat}_sample_nums_APE.png",
         )
 
 
