@@ -61,3 +61,19 @@ CLF_FILE_STEMS = {
     "cardiffnlp/twitter-roberta-base": "twitter-roberta",
     "perspective-api": "perspective",
 }
+
+
+QUANTIFICATION_STRATEGIES = [
+    "CC",
+    "ACC",
+    "PCC",
+    "PACC",
+    "CPCC",
+    "BCC",
+]
+
+
+SELECTION_STRATEGIES = [
+    "random",
+    "quantile",
+]
