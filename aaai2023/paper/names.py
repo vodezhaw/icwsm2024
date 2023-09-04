@@ -77,3 +77,18 @@ SELECTION_STRATEGIES = [
     "random",
     "quantile",
 ]
+
+
+SUBSAMPLING_SUFFIXES = [
+    "p01", "p05", "p1", "p3", "p5", "p10",
+]
+
+
+SUBSAMPLING_PREVALENCES = {
+    "p01": .001,
+    "p05": .005,
+    "p1": .01,
+    "p3": .03,
+    "p5": .05,
+    "p10": .1,
+}

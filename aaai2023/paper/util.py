@@ -5,11 +5,7 @@ import json
 from dataclasses import dataclass, asdict
 
 from aaai2023.scripts.experiments import ExperimentResult
-
-
-SUBSAMPLING_SUFFIXES = [
-    "p01", "p05", "p1", "p3", "p5", "p10",
-]
+from paper.names import SUBSAMPLING_SUFFIXES
 
 
 @dataclass(frozen=True)
