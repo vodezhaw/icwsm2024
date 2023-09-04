@@ -1,8 +1,6 @@
 
 from pathlib import Path
 
-import numpy as np
-
 from aaai2023.paper.util import read_results, compute_errors, is_subsampling
 from aaai2023.paper.names import QUANTIFICATION_STRATEGIES
 from aaai2023.paper.plot_utils import all_box_plots

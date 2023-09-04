@@ -1,10 +1,5 @@
 
-from typing import Dict, Tuple, List
 from pathlib import Path
-
-from matplotlib import rc_context, pyplot as plt
-
-import numpy as np
 
 from aaai2023.paper.util import read_results, compute_errors, is_subsampling
 from aaai2023.paper.names import SUBSAMPLING_SUFFIXES, SUBSAMPLING_PREVALENCES
