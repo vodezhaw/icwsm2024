@@ -29,7 +29,7 @@ def box_plots(
             for jx, group_name in enumerate(group_labels):
                 box_data = plt.boxplot(
                     data[x_name, group_name],
-                    positions=[group_size*ix + jx + 1],
+                    positions=[(group_size + 1)*ix + jx + 1],
                     widths=.6,
                     whis=(5, 95),
                     showmeans=True,
@@ -57,17 +57,19 @@ def box_plots(
                     text=f"{median_data.get_ydata()[0]:.3f}",
                     xy=(median_data.get_xdata().mean(), median_data.get_ydata()[0] - .05),
                     xycoords='data',
+                    fontsize="x-small",
                 )
                 plt.annotate(
                     text=f"{mean_data.get_ydata()[0]:.3f}",
-                    xy=(mean_data.get_xdata().mean(), mean_data.get_ydata()[0] + .05),
+                    xy=(mean_data.get_xdata().mean(), mean_data.get_ydata()[0] + .01),
                     xycoords='data',
+                    fontsize="x-small",
                 )
 
-        ax.set_xticks(
-            group_size * i + (group_size / 2)
+        ax.set_xticks([
+            (group_size + 1) * i + ((group_size + 1) / 2)
             for i in range(len(x_labels))
-        )
+        ])
         ax.set_xticklabels(x_labels)
 
         if x_label is not None:
