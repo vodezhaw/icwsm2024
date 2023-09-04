@@ -1,9 +1,11 @@
 
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Callable
 
 import numpy as np
 
 from matplotlib import rc_context, pyplot as plt
+
+from aaai2023.paper.util import ExperimentError
 
 
 def box_plots(
@@ -93,3 +95,79 @@ def box_plots(
             plt.show()
         else:
             plt.savefig(save_as)
+
+        plt.close(fig)
+
+
+def all_box_plots(
+    groupings: Dict[Tuple[str, str], List[ExperimentError]],
+    x_labels: List[str],
+    group_labels: List[str],
+    group_style: Dict[str, dict],
+    file_name_fn: Callable[[str, str], str],
+    breakdown_by_clf: bool = True,
+    x_label: str | None = None,
+):
+    aes = {
+        k: np.array([e.absolute_error for e in vs])
+        for k, vs in groupings.items()
+    }
+    apes = {
+        k: np.array([e.absolute_percentage_error for e in vs])
+        for k, vs in groupings.items()
+    }
+    box_plots(
+        x_labels=x_labels,
+        group_labels=group_labels,
+        data=aes,
+        group_style=group_style,
+        x_label=x_label,
+        y_label="Absolute Error",
+        save_as=file_name_fn("all", "AE"),
+    )
+    box_plots(
+        x_labels=x_labels,
+        group_labels=group_labels,
+        data=apes,
+        group_style=group_style,
+        x_label=x_label,
+        y_label="Absolute Relative Error",
+        save_as=file_name_fn("all", "APE"),
+    )
+
+    if breakdown_by_clf:
+        for clf in ['electra', 'cardiffnlp', 'tfidf-svm', 'perspective']:
+            aes = {
+                k: np.array([
+                    e.absolute_error
+                    for e in vs
+                    if clf in e.scores_file
+                ])
+                for k, vs in groupings.items()
+            }
+            apes = {
+                k: np.array([
+                    e.absolute_percentage_error
+                    for e in vs
+                    if clf in e.scores_file
+                ])
+                for k, vs in groupings.items()
+            }
+            box_plots(
+                x_labels=x_labels,
+                group_labels=group_labels,
+                data=aes,
+                group_style=group_style,
+                x_label=x_label,
+                y_label="Absolute Error",
+                save_as=file_name_fn(clf, "AE"),
+            )
+            box_plots(
+                x_labels=x_labels,
+                group_labels=group_labels,
+                data=apes,
+                group_style=group_style,
+                x_label=x_label,
+                y_label="Absolute Relative Error",
+                save_as=file_name_fn(clf, "APE"),
+            )
