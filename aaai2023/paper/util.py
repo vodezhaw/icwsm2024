@@ -5,7 +5,7 @@ import json
 from dataclasses import dataclass, asdict
 
 from aaai2023.scripts.experiments import ExperimentResult
-from paper.names import SUBSAMPLING_SUFFIXES
+from aaai2023.paper.names import SUBSAMPLING_SUFFIXES
 
 
 @dataclass(frozen=True)
