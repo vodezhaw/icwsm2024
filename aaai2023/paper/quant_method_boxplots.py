@@ -1,78 +1,11 @@
 
 from pathlib import Path
-from typing import Dict
 
 import numpy as np
-from matplotlib import rc_context
-from matplotlib import pyplot as plt
 
 from aaai2023.paper.util import read_results, is_subsampling, compute_errors
-
-
-def boxplots(
-    data: Dict[str, Dict[str, np.array]],
-    y_label: str | None = None,
-    save_as: str | None = None,
-):
-    with rc_context({
-        "lines.linewidth": 5,
-        "font.size": 20,
-        # "font.weight": "bold",
-        # "axes.labelweight": "bold",
-    }):
-        fig, ax = plt.subplots()
-        fig.set_size_inches(16, 9)
-        fig.set_tight_layout(True)
-
-        qstrats = ['CC', 'ACC', 'PCC', 'PACC', 'CPCC', 'BCC']
-        sstrats = [('random', "black"), ('quantile', "#A9B0B3")]
-
-        for ix, qstrat in enumerate(qstrats):
-            for jx, (sstrat, box_color) in enumerate(sstrats):
-                box_data = plt.boxplot(
-                    data[qstrat][sstrat],
-                    positions=[3*ix + jx + 1],
-                    widths=.6,
-                    whis=(5, 95),
-                    showmeans=True,
-                    meanline=True,
-                    boxprops={
-                        'linewidth': 5,
-                    },
-                    whiskerprops={
-                        'linewidth': 2,
-                    },
-                    capprops={
-                        "linewidth": 2,
-                    },
-                    medianprops={
-                        'linewidth': 2,
-                    },
-                    meanprops={
-                        'linewidth': 2,
-                    }
-                )
-                plt.setp(box_data['boxes'][0], color=box_color)
-
-        ax.set_xticks([3*i + 1.5 for i in range(len(qstrats))])
-        ax.set_xticklabels(qstrats)
-
-        if y_label is not None:
-            ax.set_ylabel(ylabel=y_label)
-
-        dummy_lines = [
-            plt.plot([1, 1], color=color, label=sstrat)
-            for sstrat, color in sstrats
-        ]
-        plt.legend(loc="upper right")
-
-        for dummy in dummy_lines:
-            dummy[0].set_visible(False)
-
-        if save_as is None:
-            plt.show()
-        else:
-            plt.savefig(save_as)
+from aaai2023.paper.plot_utils import box_plots
+from aaai2023.paper.names import QUANTIFICATION_STRATEGIES, SELECTION_STRATEGIES
 
 
 def main():
@@ -101,80 +34,107 @@ def main():
         if r.error_message is None
     ]
 
-    res = {
-        q_strat: {
-            s_strat: [
+    groupings = {}
+    for q_strat in QUANTIFICATION_STRATEGIES:
+        for s_strat in SELECTION_STRATEGIES:
+            groupings[q_strat, s_strat] = [
                 e
                 for e in res
                 if e.sample_selection_strategy == s_strat and e.quant_strategy == q_strat
             ]
-            for s_strat in ['random', 'quantile']
-        }
-        for q_strat in ['CC', 'ACC', 'PCC', 'PACC', 'CPCC', 'BCC']
-    }
 
     aes = {
-        q_strat: {
-            s_strat: np.array([e.absolute_error for e in errs])
-            for s_strat, errs in s_strats.items()
-        }
-        for q_strat, s_strats in res.items()
+        k: np.array([e.absolute_error for e in vs])
+        for k, vs in groupings.items()
     }
 
     apes = {
-        q_strat: {
-            s_strat: np.array([e.absolute_percentage_error for e in errs])
-            for s_strat, errs in s_strats.items()
-        }
-        for q_strat, s_strats in res.items()
+        k: np.array([e.absolute_percentage_error for e in vs])
+        for k, vs in groupings.items()
     }
 
-    boxplots(
-        aes,
+    box_plots(
+        x_labels=QUANTIFICATION_STRATEGIES,
+        group_labels=SELECTION_STRATEGIES,
+        data=aes,
+        group_style={
+            'random': {
+                'color': 'black',
+            },
+            'quantile': {
+                'color': "#A9B0B3",
+                'linestyle': '--',
+            }
+        },
         y_label="Absolute Error",
-        save_as="./artefacts/qstrats/all_aes.png",
+        save_as="./artefacts/qstrats/all_AE.png",
     )
-    boxplots(
-        apes,
+    box_plots(
+        x_labels=QUANTIFICATION_STRATEGIES,
+        group_labels=SELECTION_STRATEGIES,
+        data=apes,
+        group_style={
+            'random': {
+                'color': 'black',
+            },
+            'quantile': {
+                'color': "#A9B0B3",
+                'linestyle': '--',
+            }
+        },
         y_label="Absolute Relative Error",
-        save_as="./artefacts/qstrats/all_apes.png",
+        save_as="./artefacts/qstrats/all_APE.png",
     )
 
     for clf in ['electra', 'cardiffnlp', 'tfidf-svm', 'perspective']:
         aes = {
-            q_strat: {
-                s_strat: np.array([
-                    e.absolute_error
-                    for e in errs
-                    if Path(e.scores_file).stem.startswith(clf)
-                ])
-                for s_strat, errs in s_strats.items()
-            }
-            for q_strat, s_strats in res.items()
+            k: np.array([
+                e.absolute_error
+                for e in vs
+                if Path(e.scores_file).stem.startswith(clf)
+            ])
+            for k, vs in groupings.items()
         }
         apes = {
-            q_strat: {
-                s_strat: np.array([
-                    e.absolute_percentage_error
-                    for e in errs
-                    if Path(e.scores_file).stem.startswith(clf)
-                ])
-                for s_strat, errs in s_strats.items()
-            }
-            for q_strat, s_strats in res.items()
+            k: np.array([
+                e.absolute_percentage_error
+                for e in vs
+                if Path(e.scores_file).stem.startswith(clf)
+            ])
+            for k, vs in groupings.items()
         }
-        boxplots(
-            aes,
+        box_plots(
+            x_labels=QUANTIFICATION_STRATEGIES,
+            group_labels=SELECTION_STRATEGIES,
+            data=aes,
+            group_style={
+                'random': {
+                    'color': 'black',
+                },
+                'quantile': {
+                    'color': "#A9B0B3",
+                    'linestyle': '--',
+                }
+            },
             y_label="Absolute Error",
-            save_as=f"./artefacts/qstrats/{clf}_aes.png",
+            save_as=f"./artefacts/qstrats/{clf}_AE.png",
         )
-        boxplots(
-            apes,
+        box_plots(
+            x_labels=QUANTIFICATION_STRATEGIES,
+            group_labels=SELECTION_STRATEGIES,
+            data=apes,
+            group_style={
+                'random': {
+                    'color': 'black',
+                },
+                'quantile': {
+                    'color': "#A9B0B3",
+                    'linestyle': '--',
+                }
+            },
             y_label="Absolute Relative Error",
-            save_as=f"./artefacts/qstrats/{clf}_apes.png",
+            save_as=f"./artefacts/qstrats/{clf}_APE.png",
         )
-
-    return res
 
 
 if __name__ == "__main__":
