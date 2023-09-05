@@ -92,3 +92,16 @@ SUBSAMPLING_PREVALENCES = {
     "p5": .05,
     "p10": .1,
 }
+
+RANDOM_SEEDS = [
+    0x8BADF00D,
+    0xB16B00B5,
+    0xC00010FF,
+    0xCAFEBABE,
+    0x0D15EA5E,
+    0xDABBAD00,
+    0xDEADBEEF,
+    0xDECAFBAD,
+    0xDEFEC8ED,
+    0xFACEB00C,
+]
