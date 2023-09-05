@@ -1,7 +1,8 @@
 
 from abc import abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
+from collections import Counter
 
 import numpy as np
 
@@ -41,6 +42,118 @@ class MethodMax(ThresholdMethod):
 
     def threshold_quality(self, tpr: np.array, fpr: np.array) -> np.array:
         return tpr - fpr
+
+
+class SampleSelectionMethod:
+
+    @abstractmethod
+    def select(self, n: int, scores: np.array) -> Tuple[np.array, np.array]:
+        raise NotImplemented
+
+
+class SelectRandom(SampleSelectionMethod):
+
+    def __init__(self, seed: int = 0xdeadbeef):
+        super().__init__()
+        self.seed = seed
+
+    def select(self, n: int, scores: np.array) -> Tuple[np.array, np.array]:
+        return train_test_split(
+            np.arange(len(scores)),
+            train_size=n,
+            random_state=self.seed,
+            shuffle=True,
+            stratify=None,
+        )
+
+
+def compute_quantile_labels(
+    scores: np.array,
+    n_quantiles: int,
+) -> np.array:
+    res = np.ones(len(scores), dtype=int) * n_quantiles
+    for i in range(1, n_quantiles):
+        q = np.quantile(scores, i / n_quantiles)
+        res[scores <= q] -= 1
+    return res
+
+
+class Quantile(SampleSelectionMethod):
+
+    def __init__(
+        self,
+        n_quantiles: int = 10,
+        seed: int = 0xdeadbeef,
+    ):
+        super().__init__()
+        self.n_quantiles = n_quantiles
+        self.seed = seed
+
+    def select(self, n: int, scores: np.array) -> Tuple[np.array, np.array]:
+        # label each sample according to its quantile
+        quantile_labels = compute_quantile_labels(scores, self.n_quantiles)
+
+        all_ixs = np.arange(len(scores))
+        selected = np.zeros_like(all_ixs, dtype=bool)
+
+        # if a quantile has too few labels, select all
+        counts_per_quantile = Counter(quantile_labels)
+        for q_label, count in counts_per_quantile.items():
+            if count <= 2:
+                selected[quantile_labels == q_label] = True
+
+        # sample remaining according to quantile labels
+        if selected.sum() < n:
+            adds, _ = train_test_split(
+                all_ixs[~selected],
+                train_size=n - selected.sum(),
+                random_state=self.seed,
+                shuffle=True,
+                stratify=quantile_labels[~selected]
+            )
+            selected[adds] = True
+
+        return all_ixs[selected], all_ixs[~selected]
+
+
+class QuantileUniform(SampleSelectionMethod):
+
+    def __init__(
+        self,
+        n_quantiles: int = 10,
+        seed: int = 0xdeadbeef,
+    ):
+        super().__init__()
+        self.n_quantiles = n_quantiles
+        self.seed = seed
+
+    def select(self, n: int, scores: np.array) -> Tuple[np.array, np.array]:
+
+        # too lazy to deal with remainders
+        if n % self.n_quantiles != 0:
+            raise ValueError(f"for `QuantileUniform` please set sample size `n`"
+                             f" to an integer multiple of `n_quantiles`")
+
+        n_per_quantile = n // self.n_quantiles
+
+        # label each sample according to its quantile
+        quantile_labels = compute_quantile_labels(scores, self.n_quantiles)
+
+        all_ixs = np.arange(len(scores))
+        selected = np.zeros_like(all_ixs, dtype=bool)
+
+        # select same number of samples from each quantile bucket
+        for q_label in set(quantile_labels):
+            adds, _ = train_test_split(
+                all_ixs[quantile_labels == q_label],
+                train_size=n_per_quantile,
+                random_state=self.seed,
+                shuffle=True,
+                stratify=None,
+            )
+            selected[adds] = True
+
+        return all_ixs[selected], all_ixs[~selected]
 
 
 @dataclass(frozen=True)
