@@ -287,29 +287,12 @@ class BinaryClassifierData:
         pacc = (pcc - expected_fpr) / (expected_tpr - expected_fpr)
         return min(1., max(pacc, 0.))
 
-    def random_split(
+    def split(
         self,
         n_dev: int,
-        random_state: int = 0xdeadbeef,
-        n_quantiles: Optional[int] = None,
+        selection_method: SampleSelectionMethod,
     ) -> 'BinaryQuantificationData':
-
-        if n_quantiles is not None:
-            quantile_labels = np.ones(len(self)).astype(int) * n_quantiles
-            for i in range(1, n_quantiles):
-                q = np.quantile(self.scores, i / n_quantiles)
-                quantile_labels[self.scores <= q] -= 1
-            stratify = quantile_labels
-        else:
-            stratify = None
-
-        dev_ixs, test_ixs = train_test_split(
-            np.arange(len(self)),
-            train_size=n_dev,
-            random_state=random_state,
-            shuffle=True,
-            stratify=stratify,
-        )
+        dev_ixs, test_ixs = selection_method.select(n=n_dev, scores=self.scores)
         return BinaryQuantificationData(
             dev=BinaryClassifierData(
                 labels=self.labels[dev_ixs],
@@ -320,8 +303,28 @@ class BinaryClassifierData:
                 labels=self.labels[test_ixs],
                 scores=self.scores[test_ixs],
                 default_threshold=self.default_threshold,
-            )
+            ),
         )
+
+    def random_split(
+        self,
+        n_dev: int,
+        random_state: int = 0xdeadbeef,
+        n_quantiles: Optional[int] = None,
+        uniform_from_quantiles: bool = False,
+    ) -> 'BinaryQuantificationData':
+
+        if n_quantiles is not None:
+            if uniform_from_quantiles:
+                selection_method = QuantileUniform(
+                    n_quantiles=n_quantiles, seed=random_state)
+            else:
+                selection_method = Quantile(
+                    n_quantiles=n_quantiles, seed=random_state)
+        else:
+            selection_method = SelectRandom(seed=random_state)
+
+        return self.split(n_dev=n_dev, selection_method=selection_method)
 
     def subsample(
         self,
