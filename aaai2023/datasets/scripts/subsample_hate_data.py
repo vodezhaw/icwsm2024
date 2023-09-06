@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 
 import numpy as np
 
+from tqdm import tqdm
+
 from aaai2023.datasets import load_test, load_scores
 from aaai2023.datasets.classifier import TestDataset, ScoredDataset
 
@@ -62,7 +64,7 @@ def main(
         ]
         n_neg = len(neg_ids)
 
-        for p, p_name in p_data:
+        for p, p_name in tqdm(p_data):
             if p >= p_orig:
                 continue
             new_n_pos = int(.5 + n_neg * (p / (1. - p)))
@@ -86,7 +88,7 @@ def main(
             )
             new_test_set.save(test_path / f"{new_test_set.name}.json.gz")
 
-            for scores_data in scores[test_name]:
+            for scores_data in tqdm(scores[test_name]):
                 new_scores_data = ScoredDataset(
                     classifier_name=scores_data.classifier_name,
                     train_data=scores_data.train_data,
