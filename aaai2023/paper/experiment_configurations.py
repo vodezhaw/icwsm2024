@@ -33,7 +33,7 @@ def compare_quantification_strategies(
                         sample_selection_strategy=sstrat,
                         quant_strategy=qstrat,
                         n_samples_to_select=100,  # baseline N
-                        n_quantiles=10 if qstrat == "quantile" else None,
+                        n_quantiles=10 if sstrat == "quantile" else None,
                         other_domain_scores_file=None,
                         random_seed=seed,
                     )
