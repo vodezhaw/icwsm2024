@@ -71,10 +71,10 @@ def compute_quantile_labels(
     scores: np.array,
     n_quantiles: int,
 ) -> np.array:
-    res = np.ones(len(scores), dtype=int) * n_quantiles
-    for i in range(1, n_quantiles):
-        q = np.quantile(scores, i / n_quantiles)
-        res[scores <= q] -= 1
+    res = np.zeros_like(scores, dtype=int)
+    sorted_ixs = np.argsort(scores)
+    for label, split in enumerate(np.array_split(sorted_ixs, n_quantiles)):
+        res[split] = label
     return res
 
 
