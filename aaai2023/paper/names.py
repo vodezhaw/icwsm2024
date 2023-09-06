@@ -80,7 +80,7 @@ SELECTION_STRATEGIES = [
 
 
 SUBSAMPLING_SUFFIXES = [
-    "p01", "p05", "p1", "p3", "p5", "p10",
+    "p01", "p05", "p1", "p2", "p3", "p5", "p7", "p10",
 ]
 
 
@@ -88,8 +88,10 @@ SUBSAMPLING_PREVALENCES = {
     "p01": .001,
     "p05": .005,
     "p1": .01,
+    "p2": .02,
     "p3": .03,
     "p5": .05,
+    "p7": .07,
     "p10": .1,
 }
 
