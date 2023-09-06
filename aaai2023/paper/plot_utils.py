@@ -171,3 +171,50 @@ def all_box_plots(
                 y_label="Absolute Relative Error",
                 save_as=file_name_fn(clf, "APE"),
             )
+
+
+def bar_plots(
+        x_labels: List[str],
+        group_labels: List[str],
+        data: Dict[str, np.array],
+        group_style: Dict[str, dict],
+        x_label: str | None = None,
+        y_label: str | None = None,
+        save_as: str | None = None,
+):
+    with rc_context({
+        "lines.linewidth": 5,
+        "font.size": 20,
+    }):
+        fig, ax = plt.subplots()
+        fig.set_size_inches(16, 9)
+        fig.set_tight_layout(True)
+
+        group_size = len(group_labels)
+        xs_base = np.arange(len(x_labels))
+
+        for group_ix, group in enumerate(group_labels):
+            plt.bar(
+                (group_size + 1) * xs_base + group_ix,
+                data[group],
+                label=group,
+                **group_style[group],
+            )
+
+        ax.set_xticks((group_size + 1) * xs_base + ((group_size - 1) / 2))
+        ax.set_xticklabels(x_labels)
+
+        plt.legend(loc="upper right")
+
+        if x_label is not None:
+            ax.set_xlabel(xlabel=x_label)
+
+        if y_label is not None:
+            ax.set_ylabel(ylabel=y_label)
+
+        if save_as is None:
+            plt.show()
+        else:
+            plt.savefig(save_as)
+
+        plt.close(fig)
