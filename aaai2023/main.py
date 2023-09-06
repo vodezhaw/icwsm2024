@@ -7,7 +7,7 @@ from aaai2023.classifiers.scripts.finetune_full import main as finetune_hf
 from aaai2023.classifiers.scripts.run_perspective import main as run_perspective
 from aaai2023.classifiers.scripts.train_tfidf import main as run_tfidf
 from aaai2023.datasets.scripts.subsample_hate_data import main as subsample_hate
-from aaai2023.scripts.experiments import run_all as run_experiments
+from aaai2023.paper.experiments import run_all as run_experiments
 
 
 def main(config: Optional[dict] = None):

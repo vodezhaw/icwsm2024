@@ -4,7 +4,7 @@ from pathlib import Path
 import json
 from dataclasses import dataclass, asdict
 
-from aaai2023.scripts.experiments import ExperimentResult
+from aaai2023.paper.experiments import ExperimentResult
 from aaai2023.paper.names import SUBSAMPLING_SUFFIXES
 
 
