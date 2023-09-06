@@ -1,46 +1,30 @@
 
-from typing import Literal, Iterator, Iterable
 from pathlib import Path
-from dataclasses import dataclass, asdict
-from multiprocessing import get_context
+from dataclasses import asdict
 import warnings
-import hashlib
 import json
+from multiprocessing import get_context
 
-import numpyro
 from tqdm import tqdm
 
 from aaai2023.datasets.classifier import TestDataset, ScoredDataset
 from aaai2023.datasets.quantifier import (
     BinaryClassifierData,
     BinaryQuantificationData,
+    QuantileUniform,
+    SelectRandom,
 )
-
-
-SEEDS = [
-    0xdeadbeef,
-    0xbeefbabe,
-    0xcafebabe,
-    0xb00b00b0,
-    0xafed00d3,
-]
-
-SampleSelectionStrategy = Literal[
-    "random",
-    "quantile",
-    "other-domain",
-]
-
-QuantificationStrategy = Literal[
-    "CC",
-    "ACC",
-    "PCC",
-    "PACC",
-    "CPCC",
-    "ABCC",
-    "BCC",
-    "Truth",
-]
+from aaai2023.paper.util import (
+    Experiment,
+    ExperimentResult,
+    QuantificationStrategy,
+    SampleSelectionStrategy,
+    is_subsampling,
+)
+from aaai2023.paper.experiment_configurations import (
+    compare_quantification_strategies,
+    out_of_domain,
+)
 
 
 def build_clf_data(
@@ -48,7 +32,7 @@ def build_clf_data(
     test_folder: str,
 ) -> BinaryClassifierData:
     scores = ScoredDataset.load(Path(scores_file))
-    if any(scores.test_data.endswith(suffix) for suffix in {"-p01", "-p05", "-p10", "-p1", "-p3", "-p5"}):
+    if is_subsampling(scores.test_data):
         test_name = "-".join(scores.test_data.split("-")[:-1])
     else:
         test_name = scores.test_data
@@ -83,111 +67,6 @@ def quantify(
         return f"unknown quantification strategy `{quant_strategy}`"
 
 
-@dataclass(frozen=True)
-class Experiment:
-    scores_file: str
-    sample_selection_strategy: SampleSelectionStrategy
-    quant_strategy: QuantificationStrategy
-    n_samples_to_select: int | None = None
-    n_quantiles: int | None = None
-    other_domain_scores_file: str | None = None
-    random_seed: int | None = None
-
-    def compute_db_hash(self) -> str:
-        string_repr = (f"{self.scores_file}-"
-                       f"{self.sample_selection_strategy}-"
-                       f"{self.quant_strategy}-"
-                       f"{self.n_samples_to_select}-"
-                       f"{self.n_quantiles}-"
-                       f"{self.other_domain_scores_file}-"
-                       f"{self.random_seed}")
-        h = hashlib.new("sha256")
-        h.update(string_repr.encode("utf-8"))
-        return h.hexdigest()
-
-
-@dataclass(frozen=True)
-class ExperimentResult(Experiment):
-    predicted_prevalence: float | None = None
-    error_message: str | None = None
-
-
-def enumerate_random(n_samples: Iterable[int], random_seeds: Iterable[int]):
-    for n in n_samples:
-        for seed in random_seeds:
-            yield "random", n, None, None, seed
-
-
-def enumerate_quantiled(
-    n_samples: Iterable[int],
-    n_quantiles: Iterable[int],
-    random_seeds: Iterable[int],
-):
-    for n in n_samples:
-        for n_quant in n_quantiles:
-            for seed in random_seeds:
-                yield "quantile", n, n_quant, None, seed
-
-
-def enumerate_other(
-    clf: str,
-    train: str,
-    test: str,
-    infos: dict,
-):
-    for of, info in infos.items():
-        if info['clf'] == clf and info['train'] == train and info['test'] != test:
-            yield "other-domain", None, None, of, None
-
-
-def enumerate_experiments(
-    scores_folder: Path,
-    n_samples: Iterable[int] = (10, 25, 50, 100),
-    n_quantiles: Iterable[int] = (5, 10),
-    random_seeds: Iterable[int] = tuple(SEEDS),
-) -> Iterator[Experiment]:
-    score_information = {}
-    for sf in scores_folder.glob("*.json.gz"):
-        data = ScoredDataset.load(sf)
-        score_information[str(sf)] = {
-            "clf": data.classifier_name,
-            "train": data.train_data,
-            "test": data.test_data,
-            "default_thresh": data.default_threshold,
-        }
-        del data
-
-    for sf, info in score_information.items():
-        for qstrat in ["CC", "ACC", "PCC", "PACC", "CPCC", "ABCC", "BCC", "Truth"]:
-            if qstrat in {"PCC", "PACC"} and info["default_thresh"] != .5:
-                continue
-
-            for gen in [
-                enumerate_random(n_samples=n_samples, random_seeds=random_seeds),
-                enumerate_quantiled(
-                    n_samples=n_samples,
-                    n_quantiles=n_quantiles,
-                    random_seeds=random_seeds,
-                ),
-                enumerate_other(
-                    clf=info['clf'],
-                    train=info['train'],
-                    test=info['train'],
-                    infos=score_information,
-                ),
-            ]:
-                for sel, ns, nq, of, seed in gen:
-                    yield Experiment(
-                        scores_file=sf,
-                        sample_selection_strategy=sel,
-                        quant_strategy=qstrat,
-                        n_samples_to_select=ns,
-                        n_quantiles=nq,
-                        other_domain_scores_file=of,
-                        random_seed=seed,
-                    )
-
-
 def experiment(
     test_folder: str,
     scores_file: str,
@@ -211,10 +90,9 @@ def experiment(
         if random_seed is None:
             return (f"need to provide `random_seed` "
                     f"for selection strategy `random`")
-        quant_data = clf_data.random_split(
+        quant_data = clf_data.split(
             n_dev=n_samples_to_select,
-            n_quantiles=None,
-            random_state=random_seed
+            selection_method=SelectRandom(seed=random_seed)
         )
     elif sample_selection_strategy == "quantile":
         if n_samples_to_select is None:
@@ -226,10 +104,12 @@ def experiment(
         if n_quantiles is None:
             return (f"need to provide `n_quantiles` "
                     f"for selection strategy `quantile`")
-        quant_data = clf_data.random_split(
+        quant_data = clf_data.split(
             n_dev=n_samples_to_select,
-            n_quantiles=n_quantiles,
-            random_state=random_seed,
+            selection_method=QuantileUniform(
+                n_quantiles=n_quantiles,
+                seed=random_seed,
+            ),
         )
     elif sample_selection_strategy == "other-domain":
         if other_domain_scores_file is None:
@@ -287,8 +167,19 @@ class ExperimentWrapper:
 def run_all(
     test_folder: Path,
     scores_folder: Path,
-    results_file: Path,
+    results_folder: Path,
+    experiment_mode: str,
 ):
+    if experiment_mode == "compare_quantification_strategies":
+        exp_gen = compare_quantification_strategies(scores_folder=scores_folder)
+    elif experiment_mode == "out_of_domain":
+        exp_gen = out_of_domain(scores_folder=scores_folder)
+    else:
+        print(f"unknown experiment mode `{experiment_mode}`, exiting.")
+        return
+
+    results_file = results_folder / f"{experiment_mode}.jsonl"
+
     if results_file.exists():
         with results_file.open('r') as fin:
             already_done = {
@@ -299,37 +190,23 @@ def run_all(
         results_file.touch()
         already_done = set()
 
-    fn = ExperimentWrapper(str(test_folder))
-
     exp_gen = [
         e
-        for e in enumerate_experiments(
-            scores_folder=scores_folder,
-        )
+        for e in exp_gen
         if e.compute_db_hash() not in already_done
     ]
 
+    fn = ExperimentWrapper(str(test_folder))
+
     pbar = tqdm(total=len(exp_gen))
 
-    # batch_size = 8192
-    # for start_ix in range(0, len(exp_gen), batch_size):
-    #     next_batch = exp_gen[start_ix:start_ix+batch_size]
-    #     with get_context("spawn").Pool() as pool:
-    #         with results_file.open("a") as fout:
-    #             for result in pool.imap_unordered(func=fn, iterable=next_batch, chunksize=128):
-    #                 res_dict = asdict(result)
-    #                 res_dict["hash_id"] = result.compute_db_hash()
-    #                 fout.write(json.dumps(res_dict))
-    #                 fout.write("\n")
-    #                 pbar.update(1)
-
-    numpyro.set_host_device_count(8)
-
-    with results_file.open('a') as fout:
-        for e in exp_gen:
-            res = fn(e)
-            res_dict = asdict(res)
-            res_dict['hash_id'] = res.compute_db_hash()
-            fout.write(json.dumps(res_dict))
-            fout.write("\n")
-            pbar.update(1)
+    batch_size = 8192
+    for start_ix in range(0, len(exp_gen), batch_size):
+        next_batch = exp_gen[start_ix:start_ix+batch_size]
+        with get_context("spawn").Pool() as pool:
+            with results_file.open("a") as fout:
+                for result in pool.imap_unordered(func=fn, iterable=next_batch, chunksize=128):
+                    res_dict = asdict(result)
+                    res_dict["hash_id"] = result.compute_db_hash()
+                    fout.write(f"{json.dumps(res_dict)}\n")
+                    pbar.update(1)

@@ -54,7 +54,8 @@ def main(config: Optional[dict] = None):
         run_experiments(
             test_folder=data_path / "test",
             scores_folder=scores_path,
-            results_file=Path(sub_config['result_file']),
+            results_folder=Path(sub_config['results_folder']),
+            experiment_mode=sub_config['experiment_mode'],
         )
     else:
         print(f"unknown mode '{mode}' in configuration:"

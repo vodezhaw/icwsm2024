@@ -15,6 +15,7 @@
   "run_tfidf": {},
   "subsample_hate": {},
   "run_experiments": {
-    "result_file": "./data/trial.jsonl"
+    "results_folder": "./data/",
+    "experiment_mode": "compare_quantification_strategies"
   }
 }

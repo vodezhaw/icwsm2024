@@ -1,11 +1,58 @@
 
-from typing import List
+import hashlib
+from typing import List, Literal
 from pathlib import Path
 import json
 from dataclasses import dataclass, asdict
 
-from aaai2023.paper.experiments import ExperimentResult
 from aaai2023.paper.names import SUBSAMPLING_SUFFIXES
+
+
+SampleSelectionStrategy = Literal[
+    "random",
+    "quantile",
+    "other-domain",
+]
+
+QuantificationStrategy = Literal[
+    "CC",
+    "ACC",
+    "PCC",
+    "PACC",
+    "CPCC",
+    "ABCC",
+    "BCC",
+    "Truth",
+]
+
+
+@dataclass(frozen=True)
+class Experiment:
+    scores_file: str
+    sample_selection_strategy: SampleSelectionStrategy
+    quant_strategy: QuantificationStrategy
+    n_samples_to_select: int | None = None
+    n_quantiles: int | None = None
+    other_domain_scores_file: str | None = None
+    random_seed: int | None = None
+
+    def compute_db_hash(self) -> str:
+        string_repr = (f"{self.scores_file}-"
+                       f"{self.sample_selection_strategy}-"
+                       f"{self.quant_strategy}-"
+                       f"{self.n_samples_to_select}-"
+                       f"{self.n_quantiles}-"
+                       f"{self.other_domain_scores_file}-"
+                       f"{self.random_seed}")
+        h = hashlib.new("sha256")
+        h.update(string_repr.encode("utf-8"))
+        return h.hexdigest()
+
+
+@dataclass(frozen=True)
+class ExperimentResult(Experiment):
+    predicted_prevalence: float | None = None
+    error_message: str | None = None
 
 
 @dataclass(frozen=True)
