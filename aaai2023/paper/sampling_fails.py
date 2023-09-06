@@ -53,7 +53,7 @@ def sample_sizes(
 
     bar_plots(
         x_labels=list(map(str, n_to_select)),
-        group_labels=[m for m, _ in aethods],
+        group_labels=[m for m, _ in methods],
         data=fails,
         group_style=method_style,
         x_label="N Selected",
