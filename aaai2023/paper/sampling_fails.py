@@ -8,7 +8,6 @@ from tqdm import tqdm
 
 from aaai2023.datasets.hatespeech import load
 from aaai2023.datasets.quantifier import (
-    Quantile,
     QuantileUniform,
     SelectRandom,
 )
