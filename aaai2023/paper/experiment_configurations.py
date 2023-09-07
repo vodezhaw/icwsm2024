@@ -76,3 +76,25 @@ def out_of_domain(
                             other_domain_scores_file=str(other_info['score_file']),
                             random_seed=seed,
                         )
+
+
+def prevalence_subsampling(
+    scores_folder: Path,
+):
+    suffixes = {"p2", "p3", "p5", "p7", "p10"}
+    for score_file in scores_folder.glob("*.json.gz"):
+        name = score_file.name.split(".")[0]
+
+        if any(name.endswith(f"-{s}") for s in suffixes):
+
+            for qstrat in ["CC", "PACC", "CPCC", "BCC", "Truth"]:
+                for seed in RANDOM_SEEDS:
+                    yield Experiment(
+                        scores_file=str(score_file),
+                        sample_selection_strategy="quantile",
+                        quant_strategy=qstrat,
+                        n_samples_to_select=100,
+                        n_quantiles=10,
+                        other_domain_scores_file=None,
+                        random_seed=seed,
+                    )
