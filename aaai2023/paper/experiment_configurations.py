@@ -43,7 +43,6 @@ def out_of_domain(
     scores_folder: Path,
 ) -> Iterator[Experiment]:
     score_infos = []
-    print('load score data')
     for score_file in tqdm(list(scores_folder.glob("*.json.gz"))):
         if is_subsampling(score_file):
             continue
