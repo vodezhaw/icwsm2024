@@ -7,30 +7,18 @@ from aaai2023.paper.names import QUANTIFICATION_STRATEGIES, SELECTION_STRATEGIES
 
 
 def main():
-    res_path = Path('./data/results.jsonl')
+    res_path = Path('./data/results/compare_quantification_strategies.jsonl')
     res = read_results(res_path)
     res = compute_errors(res)
 
     # keep only in-domain experiments
-    res = [
-        r
-        for r in res
-        if r.other_domain_scores_file is None
-    ]
+    assert all(r.other_domain_scores_file is None for r in res)
 
     # ignore sub-sampling experiments
-    res = [
-        r
-        for r in res
-        if not is_subsampling(Path(r.scores_file))
-    ]
+    assert all(not is_subsampling(Path(r.scores_file)) for r in res)
 
     # ignore errors
-    res = [
-        r
-        for r in res
-        if r.error_message is None
-    ]
+    assert all(r.error_message is None for r in res)
 
     groupings = {}
     for q_strat in QUANTIFICATION_STRATEGIES:
@@ -54,7 +42,7 @@ def main():
                 'linestyle': '--',
             }
         },
-        file_name_fn=lambda clf, err: f"./artefacts/qstrats/{clf}_{err}.png",
+        file_name_fn=lambda clf, err: f"./paper_plots/qstrats/{clf}_{err}.png",
     )
 
 
