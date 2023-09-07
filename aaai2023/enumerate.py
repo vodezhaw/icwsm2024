@@ -7,6 +7,7 @@ from aaai2023.paper.experiment_configurations import (
     compare_quantification_strategies,
     out_of_domain,
     prevalence_subsampling,
+    sample_sizes,
 )
 
 
@@ -20,6 +21,8 @@ def main(
         gen = out_of_domain(scores_folder=scores_folder)
     elif experiment_mode == "prevalence_subsampling":
         gen = prevalence_subsampling(scores_folder=scores_folder)
+    elif experiment_mode == "sample_sizes":
+        gen = sample_sizes(scores_folder=scores_folder)
     else:
         raise ValueError(f"unknown experiment mode `{experiment_mode}`")
 
