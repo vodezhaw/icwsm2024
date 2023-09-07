@@ -7,30 +7,18 @@ from aaai2023.paper.plot_utils import all_box_plots
 
 
 def main():
-    res_path = Path('./data/results.jsonl')
+    res_path = Path('./data/results/out_of_domain.jsonl')
     res = read_results(res_path)
     res = compute_errors(res)
 
     # keep only out-of-domain experiments
-    res = [
-        r
-        for r in res
-        if r.other_domain_scores_file is not None
-    ]
+    assert all(r.other_domain_scores_file is not None for r in res)
 
     # ignore sub-sampling experiments
-    res = [
-        r
-        for r in res
-        if not is_subsampling(Path(r.scores_file))
-    ]
+    assert all(not is_subsampling(Path(r.scores_file)) for r in res)
 
     # ignore errors
-    res = [
-        r
-        for r in res
-        if r.error_message is None
-    ]
+    assert all(r.error_message is None for r in res)
 
     groupings = {}
     for q_strat in QUANTIFICATION_STRATEGIES:
@@ -49,7 +37,7 @@ def main():
                 'color': 'black',
             }
         },
-        file_name_fn=lambda clf, err: f"./artefacts/ood/{clf}_{err}.png",
+        file_name_fn=lambda clf, err: f"./paper_plots/ood/{clf}_{err}.png",
     )
 
 
