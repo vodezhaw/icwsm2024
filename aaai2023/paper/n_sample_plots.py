@@ -7,23 +7,15 @@ from aaai2023.paper.plot_utils import all_box_plots
 
 
 def main():
-    res_path = Path('./data/results.jsonl')
+    res_path = Path('./data/results/sample_sizes.jsonl')
     res = read_results(res_path)
     res = compute_errors(res)
 
     # keep only in-domain experiments
-    res = [
-        r
-        for r in res
-        if r.other_domain_scores_file is None
-    ]
+    assert all(r.other_domain_scores_file is None for r in res)
 
     # ignore sub-sampling experiments
-    res = [
-        r
-        for r in res
-        if not is_subsampling(Path(r.scores_file))
-    ]
+    assert all(not is_subsampling(Path(r.scores_file)) for r in res)
 
     # ignore errors
     res = [
@@ -68,7 +60,7 @@ def main():
                     'linestyle': '--',
                 }
             },
-            file_name_fn=lambda clf, err: f"./artefacts/sample_sizes/{qstrat}_{clf}_{err}.png",
+            file_name_fn=lambda clf, err: f"./paper_plots/sample_sizes/{qstrat}_{clf}_{err}.png",
             x_label="N Selected",
         )
 

@@ -57,7 +57,7 @@ def sample_sizes(
         group_style=method_style,
         x_label="N Selected",
         y_label="Fraction of Failures",
-        save_as="./artefacts/fails/sample_size.png",
+        save_as="./paper_plots/fails/sample_size.png",
     )
 
 
@@ -99,7 +99,7 @@ def prevalence(
         group_style=method_style,
         x_label="Prevalence",
         y_label="Fraction of Failures",
-        save_as="./artefacts/fails/prevalence.png",
+        save_as="./paper_plots/fails/prevalence.png",
     )
 
 
