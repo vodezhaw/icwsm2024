@@ -81,6 +81,42 @@ def main():
             x_label="Prevalence",
         )
 
+    pooled = {}
+    for (d, prev, q), vs in groupings.items():
+        if pooled.get((prev, q)) is None:
+            pooled[prev, q] = []
+        pooled[prev, q] += vs
+
+    all_box_plots(
+        groupings=pooled,
+        x_labels=[
+            f"{SUBSAMPLING_PREVALENCES[suff]:.3f}"
+            for suff in suffixes_to_plot
+        ],
+        group_labels=['CC', "PACC", 'CPCC', 'BCC'],
+        group_style={
+            'CC': {
+                'color': 'black',
+            },
+            "PACC": {
+                "color": "#919999",
+                "linestyle": "-."
+            },
+            'CPCC': {
+                'color': '#404749',
+                'linestyle': ':',
+            },
+            'BCC': {
+                'color': "#A9B0B3",
+                'linestyle': '--',
+            },
+        },
+        file_name_fn=lambda clf, err: f"./paper_plots/subsampling/both-{clf}-{err}.png",
+        x_label="Prevalence",
+    )
+
+
+
 
 if __name__ == '__main__':
     main()
