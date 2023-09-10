@@ -120,6 +120,10 @@ def all_box_plots(
         k: np.array([e.normalized_absolute_score for e in vs])
         for k, vs in groupings.items()
     }
+    sapes = {
+        k: np.array([e.symmetric_absolute_percentage_error for e in vs])
+        for k, vs in groupings.items()
+    }
     box_plots(
         x_labels=x_labels,
         group_labels=group_labels,
@@ -147,6 +151,15 @@ def all_box_plots(
         y_label="Normalized Absolute Score",
         save_as=file_name_fn("all", "NAS"),
     )
+    box_plots(
+        x_labels=x_labels,
+        group_labels=group_labels,
+        data=sapes,
+        group_style=group_style,
+        x_label=x_label,
+        y_label="Symmetric Absolute Percentage Error",
+        save_as=file_name_fn("all", "SAPE"),
+    )
 
     if breakdown_by_clf:
         for clf in ['electra', 'cardiffnlp', 'tfidf-svm', 'perspective']:
@@ -169,6 +182,14 @@ def all_box_plots(
             nas = {
                 k: np.array([
                     e.normalized_absolute_score
+                    for e in vs
+                    if clf in e.scores_file
+                ])
+                for k, vs in groupings.items()
+            }
+            sapes = {
+                k: np.array([
+                    e.symmetric_absolute_percentage_error
                     for e in vs
                     if clf in e.scores_file
                 ])
@@ -200,6 +221,15 @@ def all_box_plots(
                 x_label=x_label,
                 y_label="Normalized Absolute Score",
                 save_as=file_name_fn(clf, "NAS"),
+            )
+            box_plots(
+                x_labels=x_labels,
+                group_labels=group_labels,
+                data=sapes,
+                group_style=group_style,
+                x_label=x_label,
+                y_label="Symmetric Absolute Percentage Error",
+                save_as=file_name_fn("all", "SAPE"),
             )
 
 

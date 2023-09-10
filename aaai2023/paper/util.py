@@ -61,6 +61,7 @@ class ExperimentError(ExperimentResult):
     absolute_error: float | None = None
     absolute_percentage_error: float | None = None
     normalized_absolute_score: float | None = None
+    symmetric_absolute_percentage_error: float | None = None
 
 
 def ae(p_pred: float | None, p_true: float | None) -> float | None:
@@ -79,6 +80,13 @@ def nas(p_pred: float, p_true: float) -> float | None:
     if p_pred is None or p_true is None:
         return None
     return 1. - (abs(p_pred - p_true) / max(p_true, 1. - p_true))
+
+
+def sape(p_pred: float, p_true: float) -> float | None:
+    if p_pred is None or p_true is None:
+        return None
+    return abs(p_pred - p_true) / (p_pred + p_true)
+
 
 
 def read_results(res_file: Path) -> List[ExperimentResult]:
@@ -137,6 +145,10 @@ def compute_errors(exps: List[ExperimentResult]) -> List[ExperimentError]:
                 p_true=truths[exp_key(e)],
             ),
             normalized_absolute_score=nas(
+                p_pred=e.predicted_prevalence,
+                p_true=truths[exp_key(e)],
+            ),
+            symmetric_absolute_percentage_error=sape(
                 p_pred=e.predicted_prevalence,
                 p_true=truths[exp_key(e)],
             )
