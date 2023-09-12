@@ -1,9 +1,12 @@
 
 from typing import List, Dict, Tuple, Callable
+from pathlib import Path
 
 import numpy as np
 
 from matplotlib import rc_context, pyplot as plt
+
+from jinja2 import Environment, FileSystemLoader
 
 from aaai2023.paper.util import ExperimentError
 
@@ -278,3 +281,40 @@ def bar_plots(
             plt.savefig(save_as)
 
         plt.close(fig)
+
+
+def render_quant_results(
+    rows: List[str],
+    columns: List[str],
+    data: Dict[Tuple[str, str], List[ExperimentError]],
+    error: str = "AE",
+    save_as: str | None = None,
+):
+    if error == "AE":
+        def errf(e):
+            return e.absolute_error
+    else:
+        raise ValueError(f"cannot prepare data for error measure '{error}'")
+
+    perf_data = {}
+    for r in rows:
+        for c in columns:
+            arr = np.array([errf(e) for e in data[r, c]])
+            perf_data[r, c, 'mu'] = f"{np.mean(arr):.3f}"
+            perf_data[r, c, 'med'] = f"{np.median(arr):.3f}"
+            perf_data[r, c, '95'] = f"{np.quantile(arr, q=.95):.3f}"
+
+    env = Environment(loader=FileSystemLoader(str(Path(__file__).parent / "templates")))
+    template = env.get_template("quant_perf_table.tex")
+
+    table = template.render(
+        rows=rows,
+        cols=columns,
+        perf_data=perf_data,
+    )
+
+    if save_as is None:
+        print(table)
+    else:
+        with open(save_as, 'w') as fout:
+            fout.write(f"{table}\n")

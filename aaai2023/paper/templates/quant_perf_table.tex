@@ -1,0 +1,11 @@
+% input:
+% rows: List[str] corresponding to row labels
+% cols: List[str] corresponding to column labels
+% perf_data: dict perf_data[row, col, statistic]
+\begin{tabular}{l {% for c in cols %} | c c c {% endfor %} }
+{% for c in cols %} & \multicolumn{3}{c}{ {{ c }} } {% endfor %} \\ \hline
+{% for c in cols %} & $\mu$ & Med. & 95 {% endfor %} \\ \hline
+{% for r in rows %}
+    {{ r }} {% for c in cols %} & {{ perf_data[r, c, 'mu'] }} & {{ perf_data[r, c, 'med'] }} & {{ perf_data[r, c, '95'] }} {% endfor %} \\
+{% endfor %}
+\end{tabular}
