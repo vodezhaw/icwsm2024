@@ -102,6 +102,80 @@ def box_plots(
         plt.close(fig)
 
 
+def simple_boxplot(
+        x_labels: List[str],
+        data: Dict[str, np.array],
+        x_label: str | None = None,
+        y_label: str | None = None,
+        save_as: str | None = None,
+):
+    with rc_context({
+        "lines.linewidth": 5,
+        "font.size": 20,
+    }):
+        fig, ax = plt.subplots()
+        fig.set_size_inches(16, 9)
+        fig.set_tight_layout(True)
+
+        for ix, x_name in enumerate(x_labels):
+            box_data = plt.boxplot(
+                data[x_name],
+                positions=[2*ix + 1],
+                widths=.6,
+                whis=(5, 95),
+                showmeans=True,
+                meanline=True,
+                boxprops={
+                    'linewidth': 4,
+                },
+                whiskerprops={
+                    'linewidth': 2,
+                },
+                capprops={
+                    'linewidth': 2,
+                },
+                medianprops={
+                    'linewidth': 2,
+                },
+                meanprops={
+                    'linewidth': 2,
+                },
+            )
+            median_data = box_data['medians'][0]
+            mean_data = box_data['means'][0]
+            plt.annotate(
+                text=f"{median_data.get_ydata()[0]:.3f}",
+                xy=(median_data.get_xdata().max() + .1, median_data.get_ydata()[0] - .04),
+                xycoords='data',
+                fontsize="large",
+            )
+            plt.annotate(
+                text=f"{mean_data.get_ydata()[0]:.3f}",
+                xy=(mean_data.get_xdata().max() + .1, mean_data.get_ydata()[0] + .01),
+                xycoords='data',
+                fontsize="large",
+            )
+
+        ax.set_xticks([
+            2*i + 1
+            for i in range(len(x_labels) + 1)
+        ])
+        ax.set_xticklabels(x_labels + [""])
+
+        if x_label is not None:
+            ax.set_xlabel(xlabel=x_label)
+
+        if y_label is not None:
+            ax.set_ylabel(ylabel=y_label)
+
+        if save_as is None:
+            plt.show()
+        else:
+            plt.savefig(save_as)
+
+        plt.close(fig)
+
+
 def all_box_plots(
     groupings: Dict[Tuple[str, str], List[ExperimentError]],
     x_labels: List[str],
