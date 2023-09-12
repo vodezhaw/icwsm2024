@@ -2,7 +2,7 @@
 from pathlib import Path
 
 from aaai2023.paper.util import read_results, is_subsampling, compute_errors
-from aaai2023.paper.plot_utils import all_box_plots
+from aaai2023.paper.plot_utils import render_quant_results, simple_boxplot
 from aaai2023.paper.names import QUANTIFICATION_STRATEGIES, SELECTION_STRATEGIES
 
 
@@ -29,21 +29,25 @@ def main():
                 if e.sample_selection_strategy == s_strat and e.quant_strategy == q_strat
             ]
 
-    all_box_plots(
-        groupings=groupings,
-        x_labels=QUANTIFICATION_STRATEGIES,
-        group_labels=SELECTION_STRATEGIES,
-        group_style={
-            'random': {
-                'color': 'black',
+    for error_type in ["AE"]:
+        render_quant_results(
+            rows=QUANTIFICATION_STRATEGIES,
+            columns=SELECTION_STRATEGIES,
+            data=groupings,
+            error_type=error_type,
+            save_as=f"paper_plots/compare_quantification_strategies/all_{error_type}.tex",
+        )
+        simple_boxplot(
+            x_labels=QUANTIFICATION_STRATEGIES,
+            data={
+                q_strat: groupings[q_strat, 'random']
+                for q_strat in QUANTIFICATION_STRATEGIES
             },
-            'quantile': {
-                'color': "#A9B0B3",
-                'linestyle': '--',
-            }
-        },
-        file_name_fn=lambda clf, err: f"./paper_plots/qstrats/{clf}_{err}.png",
-    )
+            error_type=error_type,
+            x_label=None,
+            y_label="Absolute Error (AE)",
+            save_as=f"paper_plots/compare_quantification_strategies/random_{error_type}.png",
+        )
 
 
 if __name__ == "__main__":
