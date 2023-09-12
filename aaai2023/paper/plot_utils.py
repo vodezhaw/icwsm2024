@@ -11,6 +11,19 @@ from jinja2 import Environment, FileSystemLoader
 from aaai2023.paper.util import ExperimentError
 
 
+def error_array(
+    errs: List[ExperimentError],
+    error_type: str = "AE",
+) -> np.array:
+    if error_type == "AE":
+        def errf(e):
+            return e.absolute_error
+    else:
+        raise ValueError(f"cannot prepare data for error measure '{error_type}'")
+
+    return np.array([errf(e) for e in errs])
+
+
 def box_plots(
     x_labels: List[str],
     group_labels: List[str],
@@ -104,7 +117,8 @@ def box_plots(
 
 def simple_boxplot(
         x_labels: List[str],
-        data: Dict[str, np.array],
+        data: Dict[str, List[ExperimentError]],
+        error_type: str = "AE",
         x_label: str | None = None,
         y_label: str | None = None,
         save_as: str | None = None,
@@ -119,7 +133,7 @@ def simple_boxplot(
 
         for ix, x_name in enumerate(x_labels):
             box_data = plt.boxplot(
-                data[x_name],
+                error_array(data[x_name], error_type=error_type),
                 positions=[2*ix + 1],
                 widths=.6,
                 whis=(5, 95),
@@ -361,19 +375,13 @@ def render_quant_results(
     rows: List[str],
     columns: List[str],
     data: Dict[Tuple[str, str], List[ExperimentError]],
-    error: str = "AE",
+    error_type: str = "AE",
     save_as: str | None = None,
 ):
-    if error == "AE":
-        def errf(e):
-            return e.absolute_error
-    else:
-        raise ValueError(f"cannot prepare data for error measure '{error}'")
-
     perf_data = {}
     for r in rows:
         for c in columns:
-            arr = np.array([errf(e) for e in data[r, c]])
+            arr = error_array(data[r, c], error_type=error_type)
             perf_data[r, c, 'mu'] = f"{np.mean(arr):.3f}"
             perf_data[r, c, 'med'] = f"{np.median(arr):.3f}"
             perf_data[r, c, '95'] = f"{np.quantile(arr, q=.95):.3f}"
