@@ -23,7 +23,7 @@ def main():
     groupings = {}
     for q_strat in QUANTIFICATION_STRATEGIES:
         for s_strat in SELECTION_STRATEGIES:
-            groupings[q_strat, s_strat] = [
+            groupings[q_strat, s_strat.title()] = [
                 e
                 for e in res
                 if e.sample_selection_strategy == s_strat and e.quant_strategy == q_strat
@@ -32,7 +32,7 @@ def main():
     for error_type in ["AE"]:
         render_quant_results(
             rows=QUANTIFICATION_STRATEGIES,
-            columns=SELECTION_STRATEGIES,
+            columns=[s.title() for s in SELECTION_STRATEGIES],
             data=groupings,
             error_type=error_type,
             save_as=f"paper_plots/compare_quantification_strategies/all_{error_type}.tex",
@@ -40,7 +40,7 @@ def main():
         simple_boxplot(
             x_labels=QUANTIFICATION_STRATEGIES,
             data={
-                q_strat: groupings[q_strat, 'random']
+                q_strat: groupings[q_strat, 'Random']
                 for q_strat in QUANTIFICATION_STRATEGIES
             },
             error_type=error_type,
