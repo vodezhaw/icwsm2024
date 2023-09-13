@@ -3,7 +3,7 @@ from aaai2023.paper.sampling_fails import main as sampling_fails
 from aaai2023.paper.compare_quantification_methods import main as compare_quant_methods
 from aaai2023.paper.out_of_domain import main as out_of_domain
 from aaai2023.paper.subsampling_plots import main as subsample_prevalence
-from aaai2023.paper.n_sample_plots import main as sample_sizes
+from aaai2023.paper.fewer_samples import main as sample_sizes
 
 
 def main():
