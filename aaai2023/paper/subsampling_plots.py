@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aaai2023.paper.util import read_results, compute_errors, is_subsampling
 from aaai2023.paper.names import SUBSAMPLING_PREVALENCES
-from aaai2023.paper.plot_utils import all_box_plots
+from aaai2023.paper.plot_utils import render_quant_results
 
 
 def main():
@@ -46,76 +46,23 @@ def main():
                        domain in r.scores_file
                 ]
 
-    for domain in subsampling_domains:
-        groups = {
-            (prev, q): vs
-            for (d, prev, q), vs in groupings.items()
-        }
-        all_box_plots(
-            groupings=groups,
-            x_labels=[
-                f"{SUBSAMPLING_PREVALENCES[suff]:.3f}"
-                for suff in (
-                    suffixes_to_plot[:-1] if domain == 'jigsaw' else suffixes_to_plot
-                )
-            ],
-            group_labels=['CC', "PACC", 'CPCC', 'BCC'],
-            group_style={
-                'CC': {
-                    'color': 'black',
-                },
-                "PACC": {
-                    "color": "#919999",
-                    "linestyle": "-."
-                },
-                'CPCC': {
-                    'color': '#404749',
-                    'linestyle': ':',
-                },
-                'BCC': {
-                    'color': "#A9B0B3",
-                    'linestyle': '--',
-                },
-            },
-            file_name_fn=lambda clf, err: f"./paper_plots/subsampling/{domain}-{clf}-{err}.png",
-            x_label="Prevalence",
+    table_data = {}
+    for q_strat in ['CC', 'PACC', 'CPCC', 'BCC']:
+        for suff in suffixes_to_plot:
+            table_data[f"{SUBSAMPLING_PREVALENCES[suff]:.3f}", q_strat] = [
+                r
+                for d in subsampling_domains
+                for r in groupings.get((d, f"{SUBSAMPLING_PREVALENCES[suff]:.3f}", q_strat), [])
+            ]
+
+    for error_type in ["AE"]:
+        render_quant_results(
+            rows=[f"{SUBSAMPLING_PREVALENCES[suff]:.3f}" for suff in suffixes_to_plot],
+            columns=['CC', 'PACC', 'CPCC', 'BCC'],
+            data=table_data,
+            error_type=error_type,
+            save_as=f"paper_plots/low_prevalence/selected_{error_type}.tex",
         )
-
-    pooled = {}
-    for (d, prev, q), vs in groupings.items():
-        if pooled.get((prev, q)) is None:
-            pooled[prev, q] = []
-        pooled[prev, q] += vs
-
-    all_box_plots(
-        groupings=pooled,
-        x_labels=[
-            f"{SUBSAMPLING_PREVALENCES[suff]:.3f}"
-            for suff in suffixes_to_plot
-        ],
-        group_labels=['CC', "PACC", 'CPCC', 'BCC'],
-        group_style={
-            'CC': {
-                'color': 'black',
-            },
-            "PACC": {
-                "color": "#919999",
-                "linestyle": "-."
-            },
-            'CPCC': {
-                'color': '#404749',
-                'linestyle': ':',
-            },
-            'BCC': {
-                'color': "#A9B0B3",
-                'linestyle': '--',
-            },
-        },
-        file_name_fn=lambda clf, err: f"./paper_plots/subsampling/both-{clf}-{err}.png",
-        x_label="Prevalence",
-    )
-
-
 
 
 if __name__ == '__main__':
