@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aaai2023.paper.util import read_results, is_subsampling, compute_errors
 from aaai2023.paper.names import QUANTIFICATION_STRATEGIES, SELECTION_STRATEGIES
-from aaai2023.paper.plot_utils import all_box_plots
+from aaai2023.paper.plot_utils import render_quant_results
 
 
 def main():
@@ -41,28 +41,32 @@ def main():
                        e.n_samples_to_select == n
                 ]
 
-    for qstrat in QUANTIFICATION_STRATEGIES:
-        groups = {
-            (n, s): errs
-            for (q, s, n), errs in groupings.items()
-            if q == qstrat
-        }
-        all_box_plots(
-            groupings=groups,
-            x_labels=sample_nums,
-            group_labels=SELECTION_STRATEGIES,
-            group_style={
-                'random': {
-                    'color': 'black',
-                },
-                'quantile': {
-                    'color': "#A9B0B3",
-                    'linestyle': '--',
-                }
-            },
-            file_name_fn=lambda clf, err: f"./paper_plots/sample_sizes/{qstrat}_{clf}_{err}.png",
-            x_label="N Selected",
+    data = {}
+    rows = []
+    for q_strat in ["PACC", "CPCC", "BCC"]:
+        for n in sample_nums:
+            row_name = f"{q_strat}-{n}"
+            rows.append(row_name)
+            for s_strat in SELECTION_STRATEGIES:
+                data[row_name, s_strat.title()] = [
+                    e
+                    for e in res
+                    if (
+                        e.quant_strategy == q_strat
+                        and e.n_samples_to_select == n
+                        and e.sample_selection_strategy == s_strat
+                    )
+                ]
+
+    for error_type in ["AE"]:
+        render_quant_results(
+            rows=rows,
+            columns=[s.title() for s in SELECTION_STRATEGIES],
+            data=data,
+            error_type=error_type,
+            save_as=f"paper_plots/fewer_samples/selected_{error_type}.tex",
         )
+
 
 
 if __name__ == "__main__":
