@@ -80,7 +80,14 @@ SELECTION_STRATEGIES = [
 
 
 SUBSAMPLING_SUFFIXES = [
-    "p01", "p05", "p1", "p2", "p3", "p5", "p7", "p10",
+    # "p01",
+    # "p05",
+    "p1",
+    "p2",
+    "p3",
+    "p5",
+    "p7",
+    "p10",
 ]
 
 
