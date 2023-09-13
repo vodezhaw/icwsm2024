@@ -3,7 +3,7 @@ from pathlib import Path
 
 from aaai2023.paper.util import read_results, compute_errors, is_subsampling
 from aaai2023.paper.names import QUANTIFICATION_STRATEGIES
-from aaai2023.paper.plot_utils import all_box_plots
+from aaai2023.paper.plot_utils import render_quant_results, simple_boxplot
 
 
 def main():
@@ -22,23 +22,31 @@ def main():
 
     groupings = {}
     for q_strat in QUANTIFICATION_STRATEGIES:
-        groupings[q_strat, "dummy"] = [
+        groupings[q_strat, "Out-of-Domain"] = [
             e
             for e in res
             if e.quant_strategy == q_strat
         ]
 
-    all_box_plots(
-        groupings=groupings,
-        x_labels=QUANTIFICATION_STRATEGIES,
-        group_labels=['dummy'],
-        group_style={
-            'dummy': {
-                'color': 'black',
-            }
-        },
-        file_name_fn=lambda clf, err: f"./paper_plots/ood/{clf}_{err}.png",
-    )
+    for error_type in ["AE"]:
+        simple_boxplot(
+            x_labels=QUANTIFICATION_STRATEGIES,
+            data={
+                q_strat: groupings[q_strat, "Out-of-Domain"]
+                for q_strat in QUANTIFICATION_STRATEGIES
+            },
+            error_type=error_type,
+            x_label=None,
+            y_label="Absolute Error (AE)",
+            save_as=f"paper_plots/out_of_domain/all_{error_type}.png",
+        )
+        render_quant_results(
+            rows=QUANTIFICATION_STRATEGIES,
+            columns=["Out-of-Domain"],
+            data=groupings,
+            error_type=error_type,
+            save_as=f"paper_plots/out_of_domain/all_{error_type}.tex",
+        )
 
 
 if __name__ == '__main__':
