@@ -5,6 +5,8 @@ from pathlib import Path
 import json
 from dataclasses import dataclass, asdict
 
+import numpy as np
+
 from aaai2023.paper.names import SUBSAMPLING_SUFFIXES
 
 
@@ -73,6 +75,8 @@ def ae(p_pred: float | None, p_true: float | None) -> float | None:
 def ape(p_pred: float, p_true: float) -> float | None:
     if p_pred is None or p_true is None:
         return None
+    if np.allclose(p_true, 0.):  # in very rare cases we have 0 prevalence in subsampling experiments
+        return None
     return abs(p_pred - p_true) / p_true
 
 
@@ -85,8 +89,9 @@ def nas(p_pred: float, p_true: float) -> float | None:
 def sape(p_pred: float, p_true: float) -> float | None:
     if p_pred is None or p_true is None:
         return None
+    if np.allclose(p_pred + p_true, 0.):  # when theyre both 0 there's 0 err
+        return 0.
     return abs(p_pred - p_true) / (p_pred + p_true)
-
 
 
 def read_results(res_file: Path) -> List[ExperimentResult]:
