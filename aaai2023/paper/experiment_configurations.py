@@ -87,17 +87,20 @@ def prevalence_subsampling(
 
         if any(name.endswith(f"-{s}") for s in suffixes):
 
-            for qstrat in ["CC", "PACC", "CPCC", "BCC", "Truth"]:
-                for seed in RANDOM_SEEDS:
-                    yield Experiment(
-                        scores_file=str(score_file),
-                        sample_selection_strategy="quantile",
-                        quant_strategy=qstrat,
-                        n_samples_to_select=100,
-                        n_quantiles=10,
-                        other_domain_scores_file=None,
-                        random_seed=seed,
-                    )
+            for qstrat in QUANTIFICATION_STRATEGIES + ['Truth']:
+                if qstrat in {'PCC', "PACC"} and "tfidf-svm" in score_file.name:
+                    continue
+                for s_strat in SELECTION_STRATEGIES:
+                    for seed in RANDOM_SEEDS:
+                        yield Experiment(
+                            scores_file=str(score_file),
+                            sample_selection_strategy=s_strat,
+                            quant_strategy=qstrat,
+                            n_samples_to_select=100,
+                            n_quantiles=10 if s_strat == "quantile" else None,
+                            other_domain_scores_file=None,
+                            random_seed=seed,
+                        )
 
 
 def sample_sizes(
