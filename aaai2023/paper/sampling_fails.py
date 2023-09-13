@@ -17,13 +17,13 @@ from aaai2023.paper.plot_utils import bar_plots
 
 
 def sample_sizes(
-    scored_data,
+    data,
     methods,
     method_style,
 ):
-    scored_data = {
-        (clf, train, test): data
-        for (clf, train, test), data in scored_data.items()
+    data = {
+        test: d
+        for test, d in data.items()
         if not is_subsampling(test)
     }
 
@@ -34,8 +34,8 @@ def sample_sizes(
     for method_name, m_fn in methods:
         for n in n_to_select:
             result[method_name, n] = Counter(
-                data.split(n_dev=n, selection_method=m_fn(seed)).dev.labels.sum()
-                for k, data in scored_data.items()
+                bin_data.split(n_dev=n, selection_method=m_fn(seed)).dev.labels.sum()
+                for test, bin_data in data.items()
                 for seed in RANDOM_SEEDS
             )
             pbar.update(len(RANDOM_SEEDS))
@@ -62,13 +62,13 @@ def sample_sizes(
 
 
 def prevalence(
-    scored_data,
+    data,
     methods,
     method_style,
 ):
-    scored_data = {
-        (clf, train, test): data
-        for (clf, train, test), data in scored_data.items()
+    data = {
+        test: d
+        for test, d in data.items()
         if is_subsampling(test)
     }
 
@@ -77,8 +77,8 @@ def prevalence(
     for method_name, m_fn in methods:
         for suff in SUBSAMPLING_SUFFIXES:
             result[method_name, suff] = Counter(
-                data.split(n_dev=100, selection_method=m_fn(seed)).dev.labels.sum()
-                for (_, _, test), data in scored_data.items()
+                bin_data.split(n_dev=100, selection_method=m_fn(seed)).dev.labels.sum()
+                for test, bin_data in data.items()
                 for seed in RANDOM_SEEDS
                 if test.endswith(suff)
             )
@@ -112,6 +112,11 @@ def main():
         scores=scores_folder,
     )
 
+    only_one_test = {}
+    for (_, _, test), d in scored_data.items():
+        if only_one_test.get(test) is None:
+            only_one_test[test] = d
+
     methods = [
         ("random", lambda s: SelectRandom(seed=s)),
         # ("quantile", lambda s: Quantile(n_quantiles=10, seed=s)),
@@ -123,8 +128,8 @@ def main():
         "quantile": {'color': 'black', 'fill': False, 'hatch': "."},
     }
 
-    sample_sizes(scored_data, methods, method_style)
-    prevalence(scored_data, methods, method_style)
+    sample_sizes(only_one_test, methods, method_style)
+    prevalence(only_one_test, methods, method_style)
 
 
 if __name__ == '__main__':
