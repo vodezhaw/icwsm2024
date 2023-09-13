@@ -18,6 +18,9 @@ def error_array(
     if error_type == "AE":
         def errf(e):
             return e.absolute_error
+    elif error_type == "SAPE":
+        def errf(e):
+            return e.symmetric_absolute_percentage_error
     else:
         raise ValueError(f"cannot prepare data for error measure '{error_type}'")
 
