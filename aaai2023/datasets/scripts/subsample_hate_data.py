@@ -23,10 +23,7 @@ def main(
     tests = load_test(test_path)
     scores = load_scores(scores_path)
 
-    to_be_sub_sampled = ["ex-machina", "jigsaw"]
     p_data = [
-        (0.001, "01"),
-        (0.005, "05"),
         (0.01, "1"),
         (0.02, "2"),
         (0.03, "3"),
@@ -35,18 +32,13 @@ def main(
         (.1, "10"),
     ]
 
-    tests = {
-        n: t
-        for n, t in tests.items()
-        if n in to_be_sub_sampled
-    }
     scores = {
         test_set: [
             ss
-            for (clf, train_, test_), ss in scores.items()
+            for (_, _, test_), ss in scores.items()
             if test_ == test_set
         ]
-        for test_set in to_be_sub_sampled
+        for test_set in tests.keys()
     }
 
     for test_name, test_set in tests.items():
@@ -69,12 +61,22 @@ def main(
                 continue
             new_n_pos = int(.5 + n_neg * (p / (1. - p)))
 
-            pos_keep, _ = train_test_split(
-                pos_ids,
-                train_size=new_n_pos,
-                random_state=0xdeadbeef,
-                shuffle=True,
-            )
+            if new_n_pos < 15:
+                continue
+
+            # this shouldnt happen, but doesnt hurt to check
+            if new_n_pos > len(pos_ids):
+                continue
+
+            if new_n_pos == len(pos_ids):
+                pos_keep = pos_ids
+            else:
+                pos_keep, _ = train_test_split(
+                    pos_ids,
+                    train_size=new_n_pos,
+                    random_state=0xdeadbeef,
+                    shuffle=True,
+                )
 
             new_id_set = set(neg_ids).union(set(pos_keep))
 
