@@ -3,6 +3,7 @@ config/
 
 # dont commit data
 data/
+paper_plots/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
