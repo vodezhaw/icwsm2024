@@ -8,4 +8,4 @@ COPY *.whl .
 RUN python3 -m venv venv
 RUN venv/bin/pip install *.whl
 COPY config.json .
-CMD ["venv/bin/python", "-m", "aaai2023.main", "-f", "config.json"]
+CMD ["venv/bin/python", "-m", "icwsm2024.main", "-f", "config.json"]
