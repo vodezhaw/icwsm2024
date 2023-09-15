@@ -106,3 +106,18 @@ def main(
                 name = new_scores_data.classifier_name
                 name = SHORT_NAMES.get(name, name)
                 new_scores_data.save(scores_path / f"{name}-{new_scores_data.train_data}-{new_scores_data.test_data}.json.gz")
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--test", dest="test", type=Path, required=True)
+    parser.add_argument(
+        "--scores", dest="scores", type=Path, required=True)
+    args = parser.parse_args()
+
+    main(
+        test_path=args.test,
+        scores_path=args.scores,
+    )
