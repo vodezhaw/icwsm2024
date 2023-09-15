@@ -58,7 +58,7 @@ def main():
                     )
                 ]
 
-    for error_type in ["AE"]:
+    for error_type in ["AE", "SAPE"]:
         render_quant_results(
             rows=rows,
             columns=[s.title() for s in SELECTION_STRATEGIES],

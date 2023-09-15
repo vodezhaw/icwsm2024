@@ -28,7 +28,7 @@ def main():
             if e.quant_strategy == q_strat
         ]
 
-    for error_type in ["AE"]:
+    for error_type in ["AE", "SAPE"]:
         simple_boxplot(
             x_labels=QUANTIFICATION_STRATEGIES,
             data={

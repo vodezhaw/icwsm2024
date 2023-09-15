@@ -29,7 +29,7 @@ def main():
                 if e.sample_selection_strategy == s_strat and e.quant_strategy == q_strat
             ]
 
-    for error_type in ["AE"]:
+    for error_type in ["AE", "SAPE"]:
         render_quant_results(
             rows=QUANTIFICATION_STRATEGIES,
             columns=[s.title() for s in SELECTION_STRATEGIES],
