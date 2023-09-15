@@ -41,3 +41,33 @@ def main(
             model_dir=model_out,
             dev_mode=dev_mode,
         )
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--train", dest="train", type=Path, required=True)
+    parser.add_argument(
+        "--test", dest="test", type=Path, required=True)
+    parser.add_argument(
+        "--scores", dest="scores", type=Path, required=True)
+    parser.add_argument(
+        "--model-save", dest="model_out", type=Path, required=True)
+    parser.add_argument(
+        "--hf-model", dest="hf_model", type=str, required=True)
+    parser.add_argument(
+        "--short-name", dest="short_name", type=str, required=True)
+    parser.add_argument(
+        "--dev", dest="dev", type=bool, required=False, default=False, action="store_true")
+    args = parser.parse_args()
+
+    main(
+        train_path=args.train,
+        test_path=args.test,
+        scores_path=args.scores,
+        model_out=args.model_out,
+        hf_model=args.hf_model,
+        model_short=args.short_name,
+        dev_mode=args.dev,
+    )

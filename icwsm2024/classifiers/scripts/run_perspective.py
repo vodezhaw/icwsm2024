@@ -83,3 +83,30 @@ def main(
         with gzip.open(score_file, 'wt') as fout:
             fout.write(json.dumps(obj=out_data.json(), indent=2))
             fout.write('\n')
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--test", dest="test", type=Path, required=True)
+    parser.add_argument(
+        "--scores", dest="scores", type=Path, required=True)
+    parser.add_argument(
+        "--api-key", dest="api_key", type=str, required=True)
+    parser.add_argument(
+        "--cache",
+        dest="cache",
+        type=Path,
+        default=Path("perspective-cache.shelve"),
+        required=True,
+    )
+    args = parser.parse_args()
+
+    main(
+        test_path=args.test,
+        scores_path=args.scores,
+        api_key=args.api_key,
+        cache_file=args.cache,
+    )
+

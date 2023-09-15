@@ -154,3 +154,21 @@ def main(
             with gzip.open(scores_path / f"{o.classifier_name}-{o.train_data}-{o.test_data}.json.gz", "wt") as fout:
                 fout.write(json.dumps(obj=o.json(), indent=2))
                 fout.write('\n')
+
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--train", dest="train", type=Path, required=True)
+    parser.add_argument(
+        "--test", dest="test", type=Path, required=True)
+    parser.add_argument(
+        "--scores", dest="scores", type=Path, required=True)
+    args = parser.parse_args()
+
+    main(
+        train=args.train,
+        test=args.test,
+        scores_path=args.scores,
+    )
