@@ -1,8 +1,10 @@
 #!/bin/bash
 
-SCORES_FOLDER="/app/scores/"
-TEST_FOLDER="/app/data/test/"
-RESULT_FOLDER="/app/scores/"
-MODE="compare_quantification_strategies"
+SCORES_FOLDER="./data/scores/"
+TEST_FOLDER="./data/test/"
+RESULT_FOLDER="./data/results/"
+EXPERIMENTS=("compare_quantification_strategies" "out_of_domain" "prevalence_subsampling" "sample_sizes")
 
-python -m aaai2023.enumerate -s "${SCORES_FOLDER}" -m "${MODE}" | parallel --progress "python -m aaai2023.run -t ${TEST_FOLDER} -e {}" > "${RESULT_FOLDER}/${MODE}.jsonl"
+for exp in "${EXPERIMENTS[@]}"; do
+  python -m icwsm2024.enumerate -s "${SCORES_FOLDER}" -m "${exp}" | parallel --progress "python -m icwsm2024.run -t ${TEST_FOLDER} -e {}" > "${RESULT_FOLDER}/${exp}.jsonl"
+done
