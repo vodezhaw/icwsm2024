@@ -67,7 +67,7 @@ python -m icwsm.datasets.scripts.subsample_hate_data --test ./data/test --scores
 We run our experiment configurations in parallel using *gnu parallel* [0].
 
 ```shell
-./bin/experiments.sh
+./bash/experiments.sh
 ```
 
 [0]
