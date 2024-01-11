@@ -8,6 +8,7 @@ import numpy as np
 
 from sklearn.metrics import roc_curve
 from sklearn.linear_model import LogisticRegression
+from sklearn.isotonic import IsotonicRegression
 from sklearn.model_selection import train_test_split
 
 from icwsm2024.datasets.classifier import TestDataset, ScoredDataset
@@ -387,7 +388,18 @@ def merge_many(*args) -> 'BinaryClassifierData':
     )
 
 
-class PlattScaling:
+class CalibrationMethod:
+
+    @abstractmethod
+    def fit(self, y_scores, y_true):
+        raise NotImplementedError
+
+    @abstractmethod
+    def transform(self, y_scores):
+        raise NotImplementedError
+
+
+class PlattScaling(CalibrationMethod):
 
     def __init__(self):
         self.logreg = LogisticRegression(
@@ -405,6 +417,60 @@ class PlattScaling:
     def transform(self, y_scores):
         probas = self.logreg.predict_proba(y_scores[:, np.newaxis])
         return probas[:, 1]
+
+
+class Isotonic(CalibrationMethod):
+
+    def __init__(self):
+        self.iso = IsotonicRegression(
+            y_min=0.,
+            y_max=1.,
+            increasing=True,
+            out_of_bounds='clip',
+        )
+
+    def fit(self, y_scores, y_true):
+        self.iso.fit(y_scores[:, np.newaxis], y_true)
+        return self
+
+    def transform(self, y_scores):
+        scores = self.iso.predict(y_scores[:, np.newaxis])
+        return scores
+
+
+class HistogramBinning(CalibrationMethod):
+
+    def __init__(self, n: int = 10):
+        self.n = n
+        self.edges = None
+        self.theta = None
+
+    def fit(self, y_scores, y_true):
+        self.edges = np.histogram_bin_edges(y_scores, bins=self.n)
+        self.theta = np.zeros(self.n)
+
+        for ix in range(self.n):
+            mask = (y_scores >= self.edges[ix]) & (y_scores < self.edges[ix+1])
+            if mask.sum() > 0:
+                self.theta[ix] = y_true[mask].mean()
+            else:
+                self.theta[ix] = 0.
+
+        return self
+
+    def transform(self, y_scores):
+        if self.edges is None or self.theta is None:
+            raise ValueError(f"Histogram binning needs to be `fit` before calling `transform`.")
+
+        res = np.zeros_like(y_scores)
+        for ix in range(self.n):
+            mask = (y_scores >= self.edges[ix]) & (y_scores < self.edges[ix + 1])
+            res[mask] = self.theta[ix]
+
+        res[y_scores < self.edges[0]] = self.theta[0]
+        res[y_scores >= self.edges[-1]] = self.theta[-1]
+
+        return res
 
 
 class QuantScaling:
@@ -448,10 +514,12 @@ class BinaryQuantificationData:
 
     def calibrated_pcc(
         self,
+        method: CalibrationMethod | None = None,
     ) -> float:
-        calib = PlattScaling()
-        calib.fit(self.dev.scores, self.dev.labels)
-        return float(calib.transform(self.test.scores).mean())
+        if method is None:
+            method = PlattScaling()
+        method.fit(self.dev.scores, self.dev.labels)
+        return float(method.transform(self.test.scores).mean())
 
     def adjusted_classify_and_count(
         self,

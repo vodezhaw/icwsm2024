@@ -8,6 +8,7 @@ from icwsm2024.paper.experiment_configurations import (
     out_of_domain,
     prevalence_subsampling,
     sample_sizes,
+    calibration_methods,
 )
 
 
@@ -23,6 +24,8 @@ def main(
         gen = prevalence_subsampling(scores_folder=scores_folder)
     elif experiment_mode == "sample_sizes":
         gen = sample_sizes(scores_folder=scores_folder)
+    elif experiment_mode == "calibration_methods":
+        gen = calibration_methods(scores_folder=scores_folder)
     else:
         raise ValueError(f"unknown experiment mode `{experiment_mode}`")
 

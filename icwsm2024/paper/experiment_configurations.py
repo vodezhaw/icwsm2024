@@ -125,3 +125,24 @@ def sample_sizes(
                             other_domain_scores_file=None,
                             random_seed=seed,
                         )
+
+
+def calibration_methods(
+    scores_folder: Path,
+) -> Iterator[Experiment]:
+    for score_file in scores_folder.glob("*.json.gz"):
+        if is_subsampling(score_file):
+            continue
+
+        for qstrat in ['CPCC', 'CPCC-ISO', 'CPCC-HB10', 'CPCC-HB100', 'Truth']:
+            for sstrat in SELECTION_STRATEGIES:
+                for seed in RANDOM_SEEDS:
+                    yield Experiment(
+                        scores_file=str(score_file),
+                        sample_selection_strategy=sstrat,
+                        quant_strategy=qstrat,
+                        n_samples_to_select=100,  # baseline N
+                        n_quantiles=10 if sstrat == "quantile" else None,
+                        other_domain_scores_file=None,
+                        random_seed=seed,
+                    )

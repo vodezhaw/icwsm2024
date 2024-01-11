@@ -13,6 +13,9 @@ from icwsm2024.datasets.quantifier import (
     BinaryQuantificationData,
     QuantileUniform,
     SelectRandom,
+    PlattScaling,
+    Isotonic,
+    HistogramBinning,
 )
 from icwsm2024.paper.util import (
     Experiment,
@@ -57,6 +60,12 @@ def quantify(
         return quant_data.probabilistic_adjusted_classify_and_count()
     elif quant_strategy == "CPCC":
         return quant_data.calibrated_pcc()
+    elif quant_strategy == "CPCC-ISO":
+        return quant_data.calibrated_pcc(method=Isotonic())
+    elif quant_strategy == "CPCC-HB10":
+        return quant_data.calibrated_pcc(method=HistogramBinning(n=10))
+    elif quant_strategy == "CPCC-HB100":
+        return quant_data.calibrated_pcc(method=HistogramBinning(n=100))
     elif quant_strategy == "ABCC":
         return quant_data.bayesian_classify_and_count(agnostic=True)
     elif quant_strategy == "BCC":
