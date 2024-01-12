@@ -39,6 +39,7 @@ def box_plots(
     with rc_context({
         "lines.linewidth": 5,
         "font.size": 20,
+        "text.usetex": True,
     }):
         fig, ax = plt.subplots()
         fig.set_size_inches(16, 9)
