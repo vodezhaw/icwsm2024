@@ -27,7 +27,7 @@ def sample_sizes(
         if not is_subsampling(test)
     }
 
-    n_to_select = list(range(10, 201, 10))
+    n_to_select = list(range(10, 121, 10))
 
     result = {}
     pbar = tqdm(total=len(methods) * len(n_to_select) * len(RANDOM_SEEDS))
@@ -55,7 +55,7 @@ def sample_sizes(
         group_labels=[m for m, _ in methods],
         data=fails,
         group_style=method_style,
-        x_label="N Selected",
+        x_label="$N_{calib}$",
         y_label="Fraction of Failures",
         save_as="./paper_plots/fails/sample_size.png",
     )
