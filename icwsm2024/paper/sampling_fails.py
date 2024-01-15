@@ -1,4 +1,4 @@
-
+import json
 from pathlib import Path
 from collections import Counter
 
@@ -45,6 +45,16 @@ def sample_sizes(
         for k, counts in result.items()
     }
 
+    with open('paper_plots/fails/sample_size_raw.json', 'w') as fout:
+        json.dump(
+            fp=fout,
+            obj={
+                "__".join(map(str, k)): v
+                for k, v in percent_fails.items()
+            },
+            indent=2,
+        )
+
     fails = {
         method: np.array([percent_fails[method, n] for n in n_to_select])
         for method, _ in methods
@@ -77,7 +87,7 @@ def prevalence(
     for method_name, m_fn in methods:
         for suff in SUBSAMPLING_SUFFIXES:
             result[method_name, suff] = Counter(
-                bin_data.split(n_dev=100, selection_method=m_fn(seed)).dev.labels.sum()
+                int(bin_data.split(n_dev=100, selection_method=m_fn(seed)).dev.labels.sum())
                 for test, bin_data in data.items()
                 for seed in RANDOM_SEEDS
                 if test.endswith(suff)
@@ -91,6 +101,16 @@ def prevalence(
         ])
         for method, _ in methods
     }
+
+    with open('paper_plots/fails/prevalence_raw.json', 'w') as fout:
+        json.dump(
+            fp=fout,
+            obj={
+                "__".join(map(str, k)): v.get(0, 0) / sum(result[k].values())
+                for k, v in result.items()
+            },
+            indent=2,
+        )
 
     bar_plots(
         x_labels=[f"{SUBSAMPLING_PREVALENCES[suff]:.3f}" for suff in SUBSAMPLING_SUFFIXES],
